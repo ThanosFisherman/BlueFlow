@@ -3,12 +3,8 @@ package io.github.thanosfisherman.blueflow.sample
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlin.coroutines.coroutineContext
 
 class MainActivity : AppCompatActivity() {
@@ -17,8 +13,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         runBlocking {
-            createFlow().collect {
+            createFlow()
+            createFlow().buffer().safeCollect() {
                 Log.i("Main", it.toString())
                 if (it == 1) {
                     cancel()
@@ -30,11 +28,11 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun createFlow(): Flow<Int> {
 
-        val pls = flow {
+        return flow {
+            Log.i("MAIN", "createFlow Called")
             emit(1)
             emit(2)
         }
-        return pls
     }
 
 }
