@@ -2,19 +2,21 @@ package io.github.thanosfisherman.blueflow
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothProfile
+import android.bluetooth.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.location.LocationManager
 import android.text.TextUtils
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.util.*
 
 class BlueFlow(private val context: Context) {
 
@@ -360,5 +362,35 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
+    }
+
+    /**
+     * Opens {@link BluetoothServerSocket}, listens for a single connection request, releases socket
+     * and returns a connected {@link BluetoothSocket} on successful connection. Notifies observers
+     * with {@link IOException} {@code onError()}.
+     *
+     * @param name service name for SDP record
+     * @param uuid uuid for SDP record
+     * @param secure connection security status
+     * @return Single with connected {@link BluetoothSocket} on successful connection
+     */
+    suspend fun connectAsServer(
+        name: String,
+        uuid: UUID,
+        secure: Boolean
+    ): Deferred<BluetoothSocket> =
+        coroutineScope {
+            return@coroutineScope async {
+                val bluetoothServerSocket: BluetoothServerSocket = if (secure)
+                    bluetoothAdapter.listenUsingRfcommWithServiceRecord(name, uuid)
+                else
+                    bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid)
+
+                bluetoothServerSocket.accept()
+            }
+        }
+
+    suspend fun connectAsClient(bluetoothDevice: BluetoothDevice, uuid: UUID, secure: Boolean) {
+        TODO()
     }
 }
