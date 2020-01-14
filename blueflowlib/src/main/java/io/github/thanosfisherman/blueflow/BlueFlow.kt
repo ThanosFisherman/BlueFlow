@@ -1,5 +1,6 @@
 package io.github.thanosfisherman.blueflow
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -13,8 +14,7 @@ import android.text.TextUtils
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.callbackFlow
 
 class BlueFlow(private val context: Context) {
 
@@ -26,6 +26,7 @@ class BlueFlow(private val context: Context) {
      * @return true if bluetoothAdapter is not null or it's address is empty, otherwise Bluetooth is
      * not supported on this hardware platform
      */
+    @SuppressLint("HardwareIds")
     fun isBluetoothAvailable() =
         !(bluetoothAdapter == null || TextUtils.isEmpty(bluetoothAdapter.address))
 
@@ -158,7 +159,7 @@ class BlueFlow(private val context: Context) {
      * @return Flow Observable with BluetoothDevice found
      */
     @ExperimentalCoroutinesApi
-    fun discoverDevices() = channelFlow {
+    fun discoverDevices() = callbackFlow {
         val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -183,7 +184,7 @@ class BlueFlow(private val context: Context) {
      * @return Flow Observable with DiscoveryState
      */
     @ExperimentalCoroutinesApi
-    fun discoveryState() = channelFlow {
+    fun discoveryState() = callbackFlow {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
             addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
@@ -209,7 +210,7 @@ class BlueFlow(private val context: Context) {
      * @return Flow Observable with BluetoothState
      */
     @ExperimentalCoroutinesApi
-    fun bluetoothState() = channelFlow {
+    fun bluetoothState() = callbackFlow {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
         }
@@ -233,7 +234,7 @@ class BlueFlow(private val context: Context) {
      * @return Flow Observable with scan mode
      */
     @ExperimentalCoroutinesApi
-    fun scanMode() = channelFlow {
+    fun scanMode() = callbackFlow {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
         }
@@ -248,17 +249,116 @@ class BlueFlow(private val context: Context) {
         }
     }
 
-    fun bluetoothProfile(bluetoothProfile: Int): Flow<ServiceEvent> = flow {
-       val listener = object : BluetoothProfile.ServiceListener {
-           override fun onServiceDisconnected(profile: Int) {
-               TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-           }
+    /**
+     * Observes connection to specified profile. See also {@link BluetoothProfile.ServiceListener}.
+     *
+     * @param bluetoothProfile bluetooth profile to connect to. Can be either {@link
+     * BluetoothProfile#HEALTH},{@link BluetoothProfile#HEADSET}, {@link BluetoothProfile#A2DP},
+     * {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}.
+     * @return Flow Observable with {@link ServiceEvent}
+     */
+    @ExperimentalCoroutinesApi
+    fun bluetoothProfile(bluetoothProfile: Int): Flow<ServiceEvent> = callbackFlow {
 
-           override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
-               TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-           }
+        val listener = object : BluetoothProfile.ServiceListener {
+            var proxy: BluetoothProfile? = null
+            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
+                this.proxy = proxy
+                offer(ServiceEvent(ServiceEvent.State.CONNECTED, profile, proxy))
+            }
 
-       }
+            override fun onServiceDisconnected(profile: Int) {
+                offer(ServiceEvent(ServiceEvent.State.DISCONNECTED, profile, null))
+            }
+        }
 
+        if (!bluetoothAdapter.getProfileProxy(context, listener, bluetoothProfile)) {
+            throw ProfileProxyException()
+        }
+        awaitClose {
+            listener.proxy?.let {
+                bluetoothAdapter.closeProfileProxy(bluetoothProfile, it)
+            }
+        }
+    }
+
+    /**
+     * Close the connection of the profile proxy to the Service.
+     *
+     *
+     *  Clients should call this when they are no longer using the proxy obtained from [ ][.observeBluetoothProfile].
+     *
+     * Profile can be one of [BluetoothProfile.HEALTH],[BluetoothProfile.HEADSET],
+     * [BluetoothProfile.A2DP], [BluetoothProfile.GATT] or [ ][BluetoothProfile.GATT_SERVER].
+     *
+     * @param profile the Bluetooth profile
+     * @param proxy profile proxy object
+     */
+    fun closeProfileProxy(profile: Int, proxy: BluetoothProfile) =
+        bluetoothAdapter.closeProfileProxy(profile, proxy)
+
+
+    /**
+     * Observes connection state of devices.
+     *
+     * @return Flow Observable with {@link ConnectionStateEvent}
+     */
+    @ExperimentalCoroutinesApi
+    fun connectionState() = callbackFlow {
+        val filter = IntentFilter().apply {
+            addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                intent?.let {
+                    val status = it.getIntExtra(
+                        BluetoothAdapter.EXTRA_CONNECTION_STATE,
+                        BluetoothAdapter.STATE_DISCONNECTED
+                    )
+                    val previousStatus = it.getIntExtra(
+                        BluetoothAdapter.EXTRA_PREVIOUS_CONNECTION_STATE,
+                        BluetoothAdapter.STATE_DISCONNECTED
+                    )
+                    val device =
+                        it.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as? BluetoothDevice
+                    offer(ConnectionStateEvent(status, previousStatus, device))
+                }
+            }
+        }
+        context.registerReceiver(receiver, filter)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    /**
+     * Observes bond state of devices.
+     *
+     * @return Flow Observable with {@link BondStateEvent}
+     */
+    @ExperimentalCoroutinesApi
+    fun bondState() = callbackFlow {
+        val filter = IntentFilter().apply {
+            addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                intent?.let {
+                    val state =
+                        it.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE)
+                    val previousState = it.getIntExtra(
+                        BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE,
+                        BluetoothDevice.BOND_NONE
+                    )
+                    val device =
+                        it.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as? BluetoothDevice
+                    offer(BondStateEvent(state, previousState, device))
+                }
+            }
+        }
+        context.registerReceiver(receiver, filter)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
     }
 }
