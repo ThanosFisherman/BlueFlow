@@ -8,12 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.location.LocationManager
+import android.os.Parcelable
 import android.text.TextUtils
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import java.util.*
@@ -397,7 +395,7 @@ class BlueFlow(private val context: Context) {
      * @param bluetoothDevice bluetooth device to connect
      * @param uuid uuid for SDP record
      * @param secure connection security status
-     * @return Single with connected {@link BluetoothSocket} on successful connection
+     * @return Deferred with connected {@link BluetoothSocket} on successful connection
      */
     suspend fun connectAsClientAsync(
         bluetoothDevice: BluetoothDevice,
@@ -413,11 +411,85 @@ class BlueFlow(private val context: Context) {
             }
         }
 
+    /**
+     * Create connection to {@link BluetoothDevice} via createRfcommSocket and returns a connected {@link BluetoothSocket}
+     * on successful connection.
+     * Note: createRfcommSocket is not public API and hence this might break in the future.
+     * Notifies observers with {@link IOException} or any reflection related exception via {@code onError()}.
+     *
+     * @param bluetoothDevice bluetooth device to connect
+     * @param channel RFCOMM channel to connect to
+     * @return Deferred with connected {@link BluetoothSocket} on successful connection
+     * */
     suspend fun connectAsClientAsync(
         bluetoothDevice: BluetoothDevice, channel: Int
     ): Deferred<BluetoothSocket> = coroutineScope {
         return@coroutineScope async {
-            TODO()
+            val bluetoothSocket = bluetoothDevice.createRfcommSocket(channel)
+            bluetoothSocket.also { it.connect() }
+        }
+    }
+
+    /**
+     * Observes ACL broadcast actions from {@link BluetoothDevice}. Possible broadcast ACL action
+     * values are:
+     * {@link BluetoothDevice#ACTION_ACL_CONNECTED},
+     * {@link BluetoothDevice#ACTION_ACL_DISCONNECT_REQUESTED},
+     * {@link BluetoothDevice#ACTION_ACL_DISCONNECTED}
+     *
+     * @return Flow Observable with {@link AclEvent}
+     */
+    @ExperimentalCoroutinesApi
+    fun AclEvents() = callbackFlow {
+        val filter = IntentFilter().apply {
+            addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
+            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
+            addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED)
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                intent?.let {
+                    val device =
+                        it.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as? BluetoothDevice
+                    offer(AclEvent(it.action ?: "", device))
+                }
+            }
+        }
+        context.registerReceiver(receiver, filter)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    /**
+     * Performs a service discovery and fetches a list of UUIDs that can be used to connect to {@link BluetoothDevice}
+     *
+     * @param bluetoothDevice bluetooth device to connect
+     * @return Flow Observable with an array of Device UUIDs that can be used to connect to the device
+     */
+    @ExperimentalCoroutinesApi
+    fun fetchDeviceUuids() = callbackFlow {
+        val filter = IntentFilter().apply {
+            addAction(BluetoothDevice.ACTION_UUID)
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                intent?.let { intnt ->
+                    val uuidArray =
+                        intnt.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID) as? Array<Parcelable>
+                    uuidArray?.let { offer(it.toList()) }
+                }
+                try {
+                    //Maybe I don't need to cancel prematurely
+                    cancel()
+                } catch (e: IllegalStateException) {
+                }
+            }
+        }
+
+        context.registerReceiver(receiver, filter)
+        awaitClose {
+            context.unregisterReceiver(receiver)
         }
     }
 }

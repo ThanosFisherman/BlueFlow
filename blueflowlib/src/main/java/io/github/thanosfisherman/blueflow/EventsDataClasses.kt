@@ -27,3 +27,5 @@ data class BondStateEvent(
     val previousState: Int,
     val bluetoothDevice: BluetoothDevice?
 )
+
+data class AclEvent(val action: String, val bluetoothDevice: BluetoothDevice?)
