@@ -374,7 +374,7 @@ class BlueFlow(private val context: Context) {
      * @param secure connection security status
      * @return Single with connected {@link BluetoothSocket} on successful connection
      */
-    suspend fun connectAsServer(
+    suspend fun connectAsServerAsync(
         name: String,
         uuid: UUID,
         secure: Boolean
@@ -390,7 +390,34 @@ class BlueFlow(private val context: Context) {
             }
         }
 
-    suspend fun connectAsClient(bluetoothDevice: BluetoothDevice, uuid: UUID, secure: Boolean) {
-        TODO()
+    /**
+     * Create connection to {@link BluetoothDevice} and returns a connected {@link BluetoothSocket}
+     * on successful connection. Notifies observers with {@link IOException} via {@code onError()}.
+     *
+     * @param bluetoothDevice bluetooth device to connect
+     * @param uuid uuid for SDP record
+     * @param secure connection security status
+     * @return Single with connected {@link BluetoothSocket} on successful connection
+     */
+    suspend fun connectAsClientAsync(
+        bluetoothDevice: BluetoothDevice,
+        uuid: UUID,
+        secure: Boolean
+    ): Deferred<BluetoothSocket> =
+        coroutineScope {
+            return@coroutineScope async {
+                val bluetoothSocket =
+                    if (secure) bluetoothDevice.createRfcommSocketToServiceRecord(uuid)
+                    else bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid)
+                bluetoothSocket.also { it.connect() }
+            }
+        }
+
+    suspend fun connectAsClientAsync(
+        bluetoothDevice: BluetoothDevice, channel: Int
+    ): Deferred<BluetoothSocket> = coroutineScope {
+        return@coroutineScope async {
+            TODO()
+        }
     }
 }
