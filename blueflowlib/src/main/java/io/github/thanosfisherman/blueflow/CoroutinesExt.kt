@@ -1,7 +1,5 @@
 package io.github.thanosfisherman.blueflow
 
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothSocket
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
@@ -27,13 +25,4 @@ fun <E> SendChannel<E>.safeOffer(value: E) = !isClosedForSend && try {
     offer(value)
 } catch (e: CancellationException) {
     false
-}
-
-fun BluetoothDevice.createRfcommSocket(channel: Int): BluetoothSocket {
-    try {
-        val method = this.javaClass.getMethod("createRfcommSocket", Integer.TYPE)
-        return method.invoke(this, channel) as BluetoothSocket
-    } catch (e: Exception) {
-        throw UnsupportedOperationException(e)
-    }
 }
