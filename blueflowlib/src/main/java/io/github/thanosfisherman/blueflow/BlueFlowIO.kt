@@ -1,15 +1,16 @@
 package io.github.thanosfisherman.blueflow
 
 import android.bluetooth.BluetoothSocket
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-class BtOperationsIO private constructor(val bluetoothSocket: BluetoothSocket) {
+class BlueFlowIO private constructor(val bluetoothSocket: BluetoothSocket) {
 
     private var isConnected = false
     private val inputStream: InputStream by lazy {
@@ -41,11 +42,11 @@ class BtOperationsIO private constructor(val bluetoothSocket: BluetoothSocket) {
     companion object {
 
         @Volatile
-        private var INSTANCE: BtOperationsIO? = null
+        private var INSTANCE: BlueFlowIO? = null
 
-        fun getInstance(bluetoothSocket: BluetoothSocket): BtOperationsIO {
+        fun getInstance(bluetoothSocket: BluetoothSocket): BlueFlowIO {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: BtOperationsIO(bluetoothSocket).also { INSTANCE = it }
+                INSTANCE ?: BlueFlowIO(bluetoothSocket).also { INSTANCE = it }
             }
         }
     }
@@ -105,7 +106,7 @@ class BtOperationsIO private constructor(val bluetoothSocket: BluetoothSocket) {
                     closeConnections()
             }
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Close the streams and socket connection.

@@ -17,12 +17,16 @@ import io.github.thanosfisherman.blueflow.BlueFlow
 import io.github.thanosfisherman.blueflow.safeCollect
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 
 private const val REQUEST_PERMISSION_COARSE_LOCATION = 0
 private const val REQUEST_ENABLE_BT = 1
 
+@ExperimentalCoroutinesApi
 class MainActivity : AppCompatActivity() {
 
+    private var job: CompletableJob? = null
     private val devices = arrayListOf<BluetoothDevice>()
     private lateinit var blueFlow: BlueFlow
 
@@ -46,30 +50,30 @@ class MainActivity : AppCompatActivity() {
                     REQUEST_PERMISSION_COARSE_LOCATION
                 )
             } else {
+                job?.cancel()
+                observeDevices()
                 blueFlow.startDiscovery()
-                var job = observeDevices()
-                if (job.isActive) {
-                    job.cancel()
-                    job = observeDevices()
+            }
+        }
+    }
+
+    private fun observeDevices() {
+
+        job = Job()
+
+        job?.let { job ->
+            CoroutineScope(IO + job).launch {
+
+                blueFlow.discoverDevices().safeCollect {
+                    addDevice(it)
+                    Log.i("MAIN", it.address)
                 }
             }
         }
+
     }
 
-    @ExperimentalCoroutinesApi
-    fun observeDevices(): Job {
-
-        val uiScope = CoroutineScope(Dispatchers.Main)
-
-        return uiScope.launch {
-            blueFlow.discoverDevices().safeCollect {
-                addDevice(it)
-                Log.i("MAIN", it.address)
-            }
-        }
-    }
-
-    private fun addDevice(device: BluetoothDevice) {
+    suspend fun addDevice(device: BluetoothDevice) = withContext(Main) {
         devices.add(device)
         setAdapter(devices)
     }

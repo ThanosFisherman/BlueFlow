@@ -14,6 +14,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import java.util.*
 
 class BlueFlow(private val context: Context) {
@@ -175,7 +176,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Observes DiscoveryState, which can be ACTION_DISCOVERY_STARTED or ACTION_DISCOVERY_FINISHED
@@ -198,7 +199,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Observes BluetoothState. Possible values are:
@@ -223,7 +224,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Observes scan mode of device. Possible values are:
@@ -247,7 +248,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Observes connection to specified profile. See also {@link BluetoothProfile.ServiceListener}.
@@ -280,7 +281,7 @@ class BlueFlow(private val context: Context) {
                 bluetoothAdapter.closeProfileProxy(bluetoothProfile, it)
             }
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Close the connection of the profile proxy to the Service.
@@ -329,7 +330,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Observes bond state of devices.
@@ -360,7 +361,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Opens {@link BluetoothServerSocket}, listens for a single connection request, releases socket
@@ -378,7 +379,7 @@ class BlueFlow(private val context: Context) {
         secure: Boolean
     ): Deferred<BluetoothSocket> =
         coroutineScope {
-            return@coroutineScope async {
+            return@coroutineScope async(Dispatchers.IO) {
                 val bluetoothServerSocket: BluetoothServerSocket = if (secure)
                     bluetoothAdapter.listenUsingRfcommWithServiceRecord(name, uuid)
                 else
@@ -403,7 +404,7 @@ class BlueFlow(private val context: Context) {
         secure: Boolean
     ): Deferred<BluetoothSocket> =
         coroutineScope {
-            return@coroutineScope async {
+            return@coroutineScope async(Dispatchers.IO) {
                 val bluetoothSocket =
                     if (secure) bluetoothDevice.createRfcommSocketToServiceRecord(uuid)
                     else bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid)
@@ -424,7 +425,7 @@ class BlueFlow(private val context: Context) {
     suspend fun connectAsClientAsync(
         bluetoothDevice: BluetoothDevice, channel: Int
     ): Deferred<BluetoothSocket> = coroutineScope {
-        return@coroutineScope async {
+        return@coroutineScope async(Dispatchers.IO) {
             val bluetoothSocket = bluetoothDevice.createRfcommSocket(channel)
             bluetoothSocket.also { it.connect() }
         }
@@ -459,7 +460,7 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Performs a service discovery and fetches a list of UUIDs that can be used to connect to {@link BluetoothDevice}
@@ -491,5 +492,5 @@ class BlueFlow(private val context: Context) {
         awaitClose {
             context.unregisterReceiver(receiver)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 }
