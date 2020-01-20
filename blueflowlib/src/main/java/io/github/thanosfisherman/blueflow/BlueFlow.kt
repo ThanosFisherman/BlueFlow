@@ -55,6 +55,14 @@ class BlueFlow(private val context: Context) {
     }
 
     /**
+     * Helper class for simplifying read and write operations from/to {@link BluetoothSocket}.
+     *
+     * @param socket bluetooth socket
+     * @throws Exception if can't get input/output stream from the socket
+     */
+    fun setupIO(bluetoothSocket: BluetoothSocket) = BlueFlowIO(bluetoothSocket)
+
+    /**
      * This will issue a request to enable Bluetooth through the system settings (without stopping
      * your application) via ACTION_REQUEST_ENABLE action Intent.
      *

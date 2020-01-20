@@ -10,7 +10,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-class BlueFlowIO private constructor(val bluetoothSocket: BluetoothSocket) {
+class BlueFlowIO(val bluetoothSocket: BluetoothSocket, readInterceptor: ReadInterceptor? = null) {
 
     private var isConnected = false
     private val inputStream: InputStream by lazy {
@@ -35,19 +35,6 @@ class BlueFlowIO private constructor(val bluetoothSocket: BluetoothSocket) {
         } finally {
             if (!isConnected)
                 closeConnections()
-        }
-    }
-
-
-    companion object {
-
-        @Volatile
-        private var INSTANCE: BlueFlowIO? = null
-
-        fun getInstance(bluetoothSocket: BluetoothSocket): BlueFlowIO {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: BlueFlowIO(bluetoothSocket).also { INSTANCE = it }
-            }
         }
     }
 

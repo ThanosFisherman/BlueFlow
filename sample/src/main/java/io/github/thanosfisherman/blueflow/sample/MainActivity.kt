@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    suspend fun addDevice(device: BluetoothDevice) = withContext(Main) {
+    private suspend fun addDevice(device: BluetoothDevice) = withContext(Main) {
         devices.add(device)
         setAdapter(devices)
     }
