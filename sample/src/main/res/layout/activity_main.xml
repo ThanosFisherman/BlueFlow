@@ -30,22 +30,22 @@
             android:padding="8dp">
 
             <Button
-                android:id="@+id/start"
+                android:id="@+id/btnStart"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|left"
                 android:layout_weight="1"
-                android:background="@android:color/darker_gray"
+                android:background="@android:color/holo_green_dark"
                 android:text="Start discovery"
                 android:textColor="@android:color/white" />
 
             <Button
-                android:id="@+id/stop"
+                android:id="@+id/btnSend"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@color/colorAccent"
-                android:text="Stop discovery"
+                android:background="@color/colorPrimaryDark"
+                android:text="Send message"
                 android:textColor="@android:color/white" />
         </LinearLayout>
     </FrameLayout>

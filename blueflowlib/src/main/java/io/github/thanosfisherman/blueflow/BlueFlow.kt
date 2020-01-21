@@ -17,9 +17,27 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import java.util.*
 
-class BlueFlow(private val context: Context) {
+class BlueFlow private constructor(private val context: Context) {
+
+
+    companion object {
+
+        @Volatile
+        private var INSTANCE: BlueFlow? = null
+
+        fun getInstance(context: Context): BlueFlow {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: BlueFlow(context).also { INSTANCE = it }
+            }
+        }
+    }
+
 
     val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+    @Volatile
+    var currentBluetoothSocket: BluetoothSocket? = null
+
 
     /**
      * Return true if Bluetooth is available.
@@ -55,12 +73,24 @@ class BlueFlow(private val context: Context) {
     }
 
     /**
-     * Helper class for simplifying read and write operations from/to {@link BluetoothSocket}.
+     * Get [BlueFlowIO] Helper class for simplifying read and write operations from/to {@link BluetoothSocket}.
      *
      * @param socket bluetooth socket
-     * @throws Exception if can't get input/output stream from the socket
+     * @returns BlueFlowIO
      */
-    fun setupIO(bluetoothSocket: BluetoothSocket) = BlueFlowIO(bluetoothSocket)
+    fun getIO(bluetoothSocket: BluetoothSocket): BlueFlowIO {
+        this.currentBluetoothSocket = bluetoothSocket
+        return BlueFlowIO(bluetoothSocket)
+    }
+
+    /**
+     * Helper class for simplifying read and write operations from/to {@link BluetoothSocket}.
+     *
+     * @returns BlueFlowIO or null
+     */
+    fun getIO(): BlueFlowIO? {
+        return currentBluetoothSocket?.let { BlueFlowIO(it) }
+    }
 
     /**
      * This will issue a request to enable Bluetooth through the system settings (without stopping
@@ -384,7 +414,7 @@ class BlueFlow(private val context: Context) {
     suspend fun connectAsServerAsync(
         name: String,
         uuid: UUID,
-        secure: Boolean
+        secure: Boolean = true
     ): Deferred<BluetoothSocket> =
         coroutineScope {
             return@coroutineScope async(Dispatchers.IO) {
@@ -392,8 +422,7 @@ class BlueFlow(private val context: Context) {
                     bluetoothAdapter.listenUsingRfcommWithServiceRecord(name, uuid)
                 else
                     bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid)
-
-                bluetoothServerSocket.accept()
+                bluetoothServerSocket.accept().also { currentBluetoothSocket = it }
             }
         }
 
@@ -409,14 +438,17 @@ class BlueFlow(private val context: Context) {
     suspend fun connectAsClientAsync(
         bluetoothDevice: BluetoothDevice,
         uuid: UUID,
-        secure: Boolean
+        secure: Boolean = true
     ): Deferred<BluetoothSocket> =
         coroutineScope {
             return@coroutineScope async(Dispatchers.IO) {
                 val bluetoothSocket =
                     if (secure) bluetoothDevice.createRfcommSocketToServiceRecord(uuid)
                     else bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid)
-                bluetoothSocket.also { it.connect() }
+                bluetoothSocket.apply {
+                    currentBluetoothSocket = this
+                    connect()
+                }
             }
         }
 
@@ -435,7 +467,10 @@ class BlueFlow(private val context: Context) {
     ): Deferred<BluetoothSocket> = coroutineScope {
         return@coroutineScope async(Dispatchers.IO) {
             val bluetoothSocket = bluetoothDevice.createRfcommSocket(channel)
-            bluetoothSocket.also { it.connect() }
+            bluetoothSocket.apply {
+                currentBluetoothSocket = this
+                connect()
+            }
         }
     }
 

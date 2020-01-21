@@ -11,16 +11,19 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
+class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
 
     var minExpectedBytes: Int = 2
     var buffer = ByteArray(1024) // buffer store for the stream
 
-    private var isConnected = false
-    private val inputStream: InputStream by lazy {
+    private var isConnected = true
+    private val inputStream: InputStream? by lazy {
         try {
-            isConnected = true
-            bluetoothSocket.inputStream
+            isConnected = false
+            bluetoothSocket?.let {
+                isConnected = true
+                it.inputStream
+            }
         } catch (e: IOException) {
             isConnected = false
             throw SocketStreamException("Couldn't open InputStream socket")
@@ -29,10 +32,13 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
                 closeConnections()
         }
     }
-    private val outputStream: OutputStream by lazy {
+    private val outputStream: OutputStream? by lazy {
         try {
-            isConnected = true
-            bluetoothSocket.outputStream
+            isConnected = false
+            bluetoothSocket?.let {
+                isConnected = true
+                it.outputStream
+            }
         } catch (e: IOException) {
             isConnected = false
             throw SocketStreamException("Couldn't open OutputStream socket")
@@ -50,9 +56,10 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
      */
     fun send(bytes: ByteArray): Boolean {
         if (!isConnected) return false
+
         return try {
-            outputStream.write(bytes)
-            outputStream.flush()
+            outputStream?.write(bytes)
+            outputStream?.flush()
             true
         } catch (e: IOException) {
             isConnected = false
@@ -88,7 +95,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
     fun readByteStream() = channelFlow {
         while (isActive) {
             try {
-                offer(inputStream.read().toByte())
+                inputStream?.read()?.let { offer(it.toByte()) }
             } catch (e: IOException) {
                 isConnected = false
                 error("Couldn't read bytes from flow. Disconnected")
@@ -100,18 +107,18 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
     }.flowOn(Dispatchers.IO)
 
     @ExperimentalCoroutinesApi
-    fun readByteStream(readInterceptor: (List<Byte>) -> Boolean) = channelFlow {
+    fun readByteStream(readInterceptor: (ByteArray) -> Boolean) = channelFlow {
 
         while (isActive) {
             try {
-                if (inputStream.available() < minExpectedBytes) {
+                if (inputStream?.available()!! < minExpectedBytes) {
                     delay(1000)
                     continue
                 }
-                val numBytes = inputStream.read(buffer)
-                val bytesList = trimBuffer(buffer, numBytes)
-                if (readInterceptor(bytesList)) {
-                    bytesList.forEach { offer(it) }
+                val numBytes = inputStream?.read(buffer)
+                val bytes = trimBuffer(buffer, numBytes!!)
+                if (readInterceptor(bytes)) {
+                    offer(bytes)
                 } else {
                     delay(1000)
                 }
@@ -126,10 +133,10 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
         }
     }.flowOn(Dispatchers.IO)
 
-    private fun trimBuffer(buffer: ByteArray, numBytes: Int): List<Byte> {
+    private fun trimBuffer(buffer: ByteArray, numBytes: Int): ByteArray {
         val data = ByteArray(numBytes)
         System.arraycopy(buffer, 0, data, 0, numBytes)
-        return data.toList()
+        return data
     }
 
     /**
@@ -138,9 +145,9 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
     fun closeConnections() {
         isConnected = false
         try {
-            inputStream.close()
-            outputStream.close()
-            bluetoothSocket.close()
+            inputStream?.close()
+            outputStream?.close()
+            bluetoothSocket?.close()
         } catch (e: Exception) {
         }
     }

@@ -15,10 +15,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.github.thanosfisherman.blueflow.BlueFlow
 import io.github.thanosfisherman.blueflow.safeCollect
+import io.github.thanosfisherman.blueflow.toByteArrayFromHex
+import io.github.thanosfisherman.blueflow.toHexString
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.flow.collect
+import java.util.*
 
 private const val REQUEST_PERMISSION_COARSE_LOCATION = 0
 private const val REQUEST_ENABLE_BT = 1
@@ -26,7 +30,7 @@ private const val REQUEST_ENABLE_BT = 1
 @ExperimentalCoroutinesApi
 class MainActivity : AppCompatActivity() {
 
-    private var job: CompletableJob? = null
+    private var jobs = mutableListOf<CompletableJob?>()
     private val devices = arrayListOf<BluetoothDevice>()
     private lateinit var blueFlow: BlueFlow
 
@@ -34,8 +38,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        blueFlow = BlueFlow(applicationContext)
-        start.setOnClickListener {
+        blueFlow = BlueFlow.getInstance(applicationContext)
+        btnStart.setOnClickListener {
             devices.clear()
             setAdapter(devices)
 
@@ -50,27 +54,57 @@ class MainActivity : AppCompatActivity() {
                     REQUEST_PERMISSION_COARSE_LOCATION
                 )
             } else {
-                job?.cancel()
+
                 observeDevices()
                 blueFlow.startDiscovery()
             }
+        }
+        btnSend.setOnClickListener {
+            sendMsg()
+        }
+    }
+
+    private fun sendMsg() {
+        val job = Job()
+        jobs.add(job)
+        CoroutineScope(Main + job).launch {
+            blueFlow.getIO()?.send(izarConf.toByteArrayFromHex)
         }
     }
 
     private fun observeDevices() {
 
-        job = Job()
+        val job = Job()
+        jobs.add(job)
 
-        job?.let { job ->
-            CoroutineScope(IO + job).launch {
+        CoroutineScope(IO + job).launch {
 
-                blueFlow.discoverDevices().safeCollect {
-                    addDevice(it)
-                    Log.i("MAIN", it.address)
-                }
+            blueFlow.discoverDevices().safeCollect {
+                addDevice(it)
+                Log.i("MAIN", it.address)
             }
         }
 
+    }
+
+    private fun connect(device: BluetoothDevice, uuid: UUID) {
+
+        jobs.forEach { it?.cancel() }
+        val job = Job()
+        jobs.add(job)
+
+        CoroutineScope(IO + job).launch {
+            val btSocket = blueFlow.connectAsClientAsync(device, uuid)
+            val btio = blueFlow.getIO(btSocket.await())
+            btio.readByteStream(::intercept).collect {
+                Log.i("Main", "Collected ${it.toHexString}")
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        jobs.forEach { it?.cancel() }
     }
 
     private suspend fun addDevice(device: BluetoothDevice) = withContext(Main) {
@@ -79,7 +113,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setAdapter(list: List<BluetoothDevice>) {
-        val itemLayoutId = android.R.layout.simple_list_item_1
+        //val itemLayoutId = android.R.layout.simple_list_item_1
+        result.setOnItemClickListener { parent, view, position, id ->
+
+            connect(list[position], UUID)
+        }
         result.adapter = object : ArrayAdapter<BluetoothDevice?>(
             this, android.R.layout.simple_list_item_2,
             android.R.id.text1, list
