@@ -3,6 +3,7 @@ package io.github.thanosfisherman.blueflow
 import android.bluetooth.BluetoothSocket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
@@ -10,7 +11,10 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-class BlueFlowIO(val bluetoothSocket: BluetoothSocket, readInterceptor: ReadInterceptor? = null) {
+class BlueFlowIO(val bluetoothSocket: BluetoothSocket) {
+
+    var minExpectedBytes: Int = 2
+    var buffer = ByteArray(1024) // buffer store for the stream
 
     private var isConnected = false
     private val inputStream: InputStream by lazy {
@@ -94,6 +98,39 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket, readInterceptor: ReadInte
             }
         }
     }.flowOn(Dispatchers.IO)
+
+    @ExperimentalCoroutinesApi
+    fun readByteStream(readInterceptor: (List<Byte>) -> Boolean) = channelFlow {
+
+        while (isActive) {
+            try {
+                if (inputStream.available() < minExpectedBytes) {
+                    delay(1000)
+                    continue
+                }
+                val numBytes = inputStream.read(buffer)
+                val bytesList = trimBuffer(buffer, numBytes)
+                if (readInterceptor(bytesList)) {
+                    bytesList.forEach { offer(it) }
+                } else {
+                    delay(1000)
+                }
+            } catch (e: IOException) {
+                isConnected = false
+                closeConnections()
+                error("Couldn't read bytes from flow. Disconnected")
+            } finally {
+                if (!isConnected)
+                    closeConnections()
+            }
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private fun trimBuffer(buffer: ByteArray, numBytes: Int): List<Byte> {
+        val data = ByteArray(numBytes)
+        System.arraycopy(buffer, 0, data, 0, numBytes)
+        return data.toList()
+    }
 
     /**
      * Close the streams and socket connection.
