@@ -13,10 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import io.github.thanosfisherman.blueflow.BlueFlow
-import io.github.thanosfisherman.blueflow.safeCollect
-import io.github.thanosfisherman.blueflow.toByteArrayFromHex
-import io.github.thanosfisherman.blueflow.toHexString
+import io.github.thanosfisherman.blueflow.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -84,7 +81,6 @@ class MainActivity : AppCompatActivity() {
                 Log.i("MAIN", it.address)
             }
         }
-
     }
 
     private fun connect(device: BluetoothDevice, uuid: UUID) {

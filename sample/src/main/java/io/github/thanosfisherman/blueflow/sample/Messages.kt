@@ -2,11 +2,10 @@ package io.github.thanosfisherman.blueflow.sample
 
 import android.util.Log
 import io.github.thanosfisherman.blueflow.toHex
-import io.github.thanosfisherman.blueflow.toHexString
 
 fun intercept(bytes: ByteArray): Boolean {
-    Log.i("Interceptor", bytes.toHexString)
-    if (bytes.size == 2 && bytes[0] == 0x31.toByte() && bytes[1] == 0x32.toByte()) {
+
+    if (bytes.size == 2 && bytes[0] == 0x31.toByte() && bytes[1] == 0x33.toByte()) {
         Log.i("Interceptor", "IZAR CONFIGURED")
         return true
     } else {

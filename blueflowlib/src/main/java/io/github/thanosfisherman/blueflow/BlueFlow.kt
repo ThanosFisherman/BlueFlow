@@ -15,6 +15,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
+import java.io.IOException
 import java.util.*
 
 class BlueFlow private constructor(private val context: Context) {
@@ -37,6 +38,7 @@ class BlueFlow private constructor(private val context: Context) {
 
     @Volatile
     var currentBluetoothSocket: BluetoothSocket? = null
+    private var blueFlowIO: BlueFlowIO? = null
 
 
     /**
@@ -80,7 +82,13 @@ class BlueFlow private constructor(private val context: Context) {
      */
     fun getIO(bluetoothSocket: BluetoothSocket): BlueFlowIO {
         this.currentBluetoothSocket = bluetoothSocket
-        return BlueFlowIO(bluetoothSocket)
+
+        if (blueFlowIO?.isConnected() == true) {
+            return blueFlowIO as BlueFlowIO
+        }
+
+        blueFlowIO = BlueFlowIO(bluetoothSocket)
+        return blueFlowIO as BlueFlowIO
     }
 
     /**
@@ -89,7 +97,13 @@ class BlueFlow private constructor(private val context: Context) {
      * @returns BlueFlowIO or null
      */
     fun getIO(): BlueFlowIO? {
-        return currentBluetoothSocket?.let { BlueFlowIO(it) }
+        if (blueFlowIO?.isConnected() == true) {
+            return blueFlowIO as BlueFlowIO
+        }
+        return currentBluetoothSocket?.let { socket ->
+            blueFlowIO = BlueFlowIO(socket)
+            blueFlowIO
+        }
     }
 
     /**
@@ -410,7 +424,9 @@ class BlueFlow private constructor(private val context: Context) {
      * @param uuid uuid for SDP record
      * @param secure connection security status
      * @return Single with connected {@link BluetoothSocket} on successful connection
+     * @throws IOException when socket might closed or timeout, read ret: -1
      */
+
     suspend fun connectAsServerAsync(
         name: String,
         uuid: UUID,
@@ -434,7 +450,9 @@ class BlueFlow private constructor(private val context: Context) {
      * @param uuid uuid for SDP record
      * @param secure connection security status
      * @return Deferred with connected {@link BluetoothSocket} on successful connection
+     * @throws IOException when socket might closed or timeout, read ret: -1
      */
+
     suspend fun connectAsClientAsync(
         bluetoothDevice: BluetoothDevice,
         uuid: UUID,
@@ -461,7 +479,9 @@ class BlueFlow private constructor(private val context: Context) {
      * @param bluetoothDevice bluetooth device to connect
      * @param channel RFCOMM channel to connect to
      * @return Deferred with connected {@link BluetoothSocket} on successful connection
-     * */
+     * @throws IOException when socket might closed or timeout, read ret: -1
+     */
+
     suspend fun connectAsClientAsync(
         bluetoothDevice: BluetoothDevice, channel: Int
     ): Deferred<BluetoothSocket> = coroutineScope {
@@ -536,4 +556,6 @@ class BlueFlow private constructor(private val context: Context) {
             context.unregisterReceiver(receiver)
         }
     }.flowOn(Dispatchers.IO)
+
+    fun closeConnections() = blueFlowIO?.closeConnections()
 }
