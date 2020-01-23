@@ -95,7 +95,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
     @ExperimentalCoroutinesApi
     fun readByteStream() = channelFlow {
         if (inputStream == null) {
-            return@channelFlow
+            throw NullPointerException("inputStream is null. Perhaps bluetoothSocket is also null")
         }
 
         while (isActive) {
@@ -115,7 +115,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
     fun readByteStream(readInterceptor: (ByteArray) -> Boolean) = channelFlow {
 
         if (inputStream == null) {
-            return@channelFlow
+            throw NullPointerException("inputStream is null. Perhaps bluetoothSocket is also null")
         }
 
         while (isActive) {
