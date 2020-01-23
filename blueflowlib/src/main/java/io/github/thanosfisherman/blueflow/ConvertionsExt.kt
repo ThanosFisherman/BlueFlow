@@ -5,16 +5,38 @@ import java.util.*
 import kotlin.experimental.and
 import kotlin.math.pow
 
-val String.toByteArrayFromHex inline get() = this.chunked(2).map { it.toUpperCase(Locale.ENGLISH).toInt(16).toByte() }.toByteArray()
-val ByteArray.toHexLower inline get() = this.joinToString(separator = "") { String.format("%02x", (it.toInt() and 0xFF)) }
-val ByteArray.toHexUpper inline get() = this.joinToString(separator = "") { String.format("%02X", (it.toInt() and 0xFF)) }
+val String.toByteArrayFromHex
+    inline get() = this.chunked(2).map {
+        it.toUpperCase(Locale.ENGLISH).toInt(16).toByte()
+    }.toByteArray()
+val ByteArray.toHexLower
+    inline get() = this.joinToString(separator = "") {
+        String.format(
+            "%02x",
+            (it.toInt() and 0xFF)
+        )
+    }
+val ByteArray.toHexUpper
+    inline get() = this.joinToString(separator = "") {
+        String.format(
+            "%02X",
+            (it.toInt() and 0xFF)
+        )
+    }
 val ByteArray.toHexString inline get() = this.toHexUpper
 
 fun Byte.toHex() = String.format("%02X", this)
 
+fun ByteArray.trim(size: Int): ByteArray {
+    val data = ByteArray(size)
+    System.arraycopy(this, 0, data, 0, size)
+    return data
+}
+
 fun String.incLittleEndian(): String {
     val reversedHex = this.chunked(2).reversed().joinToString("").hexToDecLong().inc()
-    var result = reversedHex.toHex().chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
+    var result =
+        reversedHex.toHex().chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
     while (result.length < this.length)
         result += "0"
     return result
@@ -22,7 +44,8 @@ fun String.incLittleEndian(): String {
 
 fun String.incLittleEndian(step: Int): String {
     val reversedHex = this.chunked(2).reversed().joinToString("").hexToDecLong().plus(step)
-    var result = reversedHex.toHex().chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
+    var result =
+        reversedHex.toHex().chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
     while (result.length < this.length)
         result += "0"
     return result

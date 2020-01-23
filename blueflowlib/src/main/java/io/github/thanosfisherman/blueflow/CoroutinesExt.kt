@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -26,3 +27,13 @@ fun <E> SendChannel<E>.safeOffer(value: E) = !isClosedForSend && try {
 } catch (e: CancellationException) {
     false
 }
+
+fun <T, R> Flow<T>.zipWithNext(transform: (T, T) -> R): Flow<R> = flow {
+    var prev: Any? = UNDEFINED
+    collect { value ->
+        if (prev !== UNDEFINED) emit(transform(prev as T, value))
+        prev = value
+    }
+}
+
+private object UNDEFINED

@@ -44,4 +44,45 @@ fun BluetoothSocket.readByteStream() = channelFlow {
     }
 }.flowOn(Dispatchers.IO)
 
-fun BluetoothSocket.readByteStream(readInterceptor: (ByteArray) -> Boolean): Nothing = TODO()
+@ExperimentalCoroutinesApi
+fun BluetoothSocket.readByteStream(
+    minExpectedBytes: Int = 2,
+    bufferCapacity: Int = 1024,
+    readInterceptor: (ByteArray) -> Boolean
+) = channelFlow {
+
+    val buffer = ByteArray(bufferCapacity)
+
+    while (isActive) {
+        try {
+            if (inputStream.available() < minExpectedBytes) {
+                delay(800)
+                continue
+            }
+            val numBytes = inputStream.read(buffer)
+            val bytes = buffer.trim(numBytes)
+            if (readInterceptor(bytes)) {
+                offer(bytes)
+            } else {
+                delay(800)
+            }
+        } catch (e: IOException) {
+            close()
+            error("Couldn't read bytes from flow. Disconnected")
+        }
+    }
+}.flowOn(Dispatchers.IO)
+
+fun BluetoothSocket.send(bytes: ByteArray): Boolean {
+
+    if (!isConnected) return false
+
+    return try {
+        outputStream.write(bytes)
+        outputStream.flush()
+        true
+    } catch (e: IOException) {
+        e.printStackTrace()
+        false
+    }
+}
