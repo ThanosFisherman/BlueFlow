@@ -13,7 +13,20 @@ dependencies {
    implementation "io.github.thanosfisherman.blueflow:blueflow:<latest-version-number-here>"
 }
 ```
-Documentation
+
+Permissions
+-------------
+
+The following permissions must be granted for this lib to be able to work correctly.
+
+```xml
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+Usage
 --------------
 
 Under Construction
