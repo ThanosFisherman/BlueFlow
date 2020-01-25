@@ -4,7 +4,7 @@ BlueFlow
 
 [![Download](https://api.bintray.com/packages/thanosfisherman/maven/blueflow/images/download.svg)](https://bintray.com/thanosfisherman/maven/blueflow/_latestVersion)
 
-Android Bluetooth classic API wrapped in Coroutines [Flow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/Flow.kt).
+Android Bluetooth classic API wrapped in [Coroutines](https://github.com/Kotlin/kotlinx.coroutines) / [Flow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/Flow.kt).
 
 License
 -------
