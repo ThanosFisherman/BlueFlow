@@ -6,7 +6,7 @@ Dependency
 ------------
 [![Download](https://api.bintray.com/packages/thanosfisherman/maven/blueflow/images/download.svg)](https://bintray.com/thanosfisherman/maven/blueflow/_latestVersion)
 
-Add the following to your **app module** `build.gradle` file
+Add the following to your **app module** `build.gradle` file. Note that the respective Coroutine dependencies should also be included in the project.
 
 ```groovy
 dependencies {
