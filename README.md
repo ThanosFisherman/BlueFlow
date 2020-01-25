@@ -1,10 +1,22 @@
 BlueFlow
 -----------
-### :rotating_light: Work in Progress :rotating_light:</br>
+Android [Bluetooth classic](https://developer.android.com/guide/topics/connectivity/bluetooth) API wrapped in [Coroutines](https://github.com/Kotlin/kotlinx.coroutines) / [Flow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/Flow.kt).
 
+Dependency
+------------
 [![Download](https://api.bintray.com/packages/thanosfisherman/maven/blueflow/images/download.svg)](https://bintray.com/thanosfisherman/maven/blueflow/_latestVersion)
 
-Android Bluetooth classic API wrapped in [Coroutines](https://github.com/Kotlin/kotlinx.coroutines) / [Flow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/Flow.kt).
+Add the following to your **app module** `build.gradle` file
+
+```groovy
+dependencies {
+   implementation "io.github.thanosfisherman.blueflow:blueflow:<latest-version-number-here>"
+}
+```
+Documentation
+--------------
+
+Under Construction
 
 License
 -------
