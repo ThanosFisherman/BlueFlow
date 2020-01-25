@@ -53,19 +53,18 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")
 }
 
-tasks {
-    dokka {
-        outputFormat = "html"
-        outputDirectory = "$buildDir/javadoc"
-        //moduleName = rootProject.name
-    }
-}
-val dokkaJar by tasks.creating(Jar::class) {
+
+val dokkaTask by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
     group = JavaBasePlugin.DOCUMENTATION_GROUP
     description = "Assembles Kotlin docs with Dokka"
-    archiveClassifier.set("javadoc")
-    from(tasks.dokka)
-    dependsOn(tasks.dokka)
+    outputFormat = "javadoc"
+    outputDirectory = "$buildDir/dokka"
+}
+
+val dokkaJar by tasks.creating(Jar::class) {
+    archiveClassifier.set("dokka")
+    from("$buildDir/dokka")
+    dependsOn(dokkaTask)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -75,10 +74,6 @@ val sourcesJar by tasks.creating(Jar::class) {
 
 publishing {
     publications {
-       /* getByName("release") {
-
-        }*/
-        //TODO: https://blog.autsoft.hu/publishing-an-android-library-to-mavencentral-in-2019/
         create<MavenPublication>(Artifact.artifactName) {
             groupId = Artifact.artifactGroup
             artifactId = Artifact.artifactName
@@ -86,8 +81,8 @@ publishing {
             //from(components["java"])
             artifacts {
                 artifact("$buildDir/outputs/aar/${project.name}-release.aar")
-                archives(sourcesJar)
-                archives(dokkaJar)
+                artifact(sourcesJar)
+                artifact(dokkaJar)
             }
 
             pom.withXml {
