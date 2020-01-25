@@ -6,7 +6,7 @@ import io.github.thanosfisherman.blueflow.toHex
 fun intercept(bytes: ByteArray): Boolean {
 
     if (bytes.size == 2 && bytes[0] == 0x31.toByte() && bytes[1] == 0x33.toByte()) {
-        Log.i("Interceptor", "IZAR CONFIGURED")
+        Log.i("Interceptor", "OK")
         return true
     } else {
         var packetLength = 0
@@ -24,6 +24,4 @@ fun intercept(bytes: ByteArray): Boolean {
 }
 
 const val izarConf = "FEFEFE424C5545313133FF"
-const val installMsg =
-    "1003E61E7856341210C0000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 val UUID = java.util.UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")

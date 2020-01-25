@@ -10,10 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import io.github.thanosfisherman.blueflow.*
+import io.github.thanosfisherman.blueflow.BlueFlow
+import io.github.thanosfisherman.blueflow.safeCollect
+import io.github.thanosfisherman.blueflow.toByteArrayFromHex
+import io.github.thanosfisherman.blueflow.toHex
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -51,16 +55,27 @@ class MainActivity : AppCompatActivity() {
                     REQUEST_PERMISSION_COARSE_LOCATION
                 )
             } else {
-
-                observeDevices()
-                blueFlow.startDiscovery()
+                if (blueFlow.isBluetoothAvailable()) {
+                    if (blueFlow.isBluetoothEnabled()) {
+                        observeDevices()
+                        blueFlow.startDiscovery()
+                    } else
+                        Toast.makeText(
+                            applicationContext,
+                            "PLEASE ENABLE BLUETOOTH",
+                            Toast.LENGTH_LONG
+                        ).show()
+                } else
+                    Toast.makeText(
+                        applicationContext,
+                        "BLUETOOTH NOT AVAILABLE ON THIS DEVICE",
+                        Toast.LENGTH_LONG
+                    ).show()
             }
-        }
-        btnSend.setOnClickListener {
-            sendMsg()
         }
     }
 
+    //hardware specific commands
     private fun sendMsg() {
         val job = Job()
         jobs.add(job)
@@ -92,8 +107,8 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(IO + job).launch {
             val btSocket = blueFlow.connectAsClientAsync(device, uuid)
             val btio = blueFlow.getIO(btSocket.await())
-            btio.readByteStream(::intercept).collect {
-                Log.i("Main", "Collected ${it.toHexString}")
+            btio.readByteStream().collect {
+                Log.i("Main", "Collected ${it.toHex()}")
             }
         }
     }
@@ -101,6 +116,8 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         jobs.forEach { it?.cancel() }
+        if (blueFlow.isBluetoothAvailable())
+            blueFlow.cancelDiscovery()
     }
 
     private suspend fun addDevice(device: BluetoothDevice) = withContext(Main) {
