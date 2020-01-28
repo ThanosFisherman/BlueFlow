@@ -29,7 +29,7 @@ The following permissions must be granted for this lib to be able to work correc
 Usage
 --------------
 
-Coming soon! For now check the sample [MainActivity](https://github.com/ThanosFisherman/BlueFlow/blob/master/sample/src/main/java/io/github/thanosfisherman/blueflow/sample/MainActivity.kt) that demonstrates bluetooth device discovery.
+Coming soon! For now check the [MainActivity](https://github.com/ThanosFisherman/BlueFlow/blob/master/sample/src/main/java/io/github/thanosfisherman/blueflow/sample/MainActivity.kt) sample that demonstrates the bluetooth device discovery.
 
 License
 -------
