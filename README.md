@@ -23,7 +23,7 @@ The following permissions must be granted for this lib to be able to work correc
 ```xml
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<!-- Dangerous Permissions below. Make sure you explicitly ask for Location Permissions in your app on Android 6.0+ -->
+<!-- Dangerous Permissions below. Make sure you explicitly ask for location Permissions in your app on Android 6.0+ -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
@@ -31,7 +31,41 @@ The following permissions must be granted for this lib to be able to work correc
 Usage
 --------------
 
-Coming soon! For now check the [MainActivity](https://github.com/ThanosFisherman/BlueFlow/blob/master/sample/src/main/java/io/github/thanosfisherman/blueflow/sample/MainActivity.kt) sample that demonstrates the bluetooth device discovery.
+*Coming soon! For now check the [MainActivity](https://github.com/ThanosFisherman/BlueFlow/blob/master/sample/src/main/java/io/github/thanosfisherman/blueflow/sample/MainActivity.kt) sample that demonstrates the bluetooth device discovery.*
+
+### Creating an instance
+
+Create a Singleton instance of `BlueFlow` like so
+
+```Kotlin
+val blueFlow: BlueFlow = BlueFlow.getInstance(applicationContext)
+```
+
+### Checking for Bluetooth availability
+
+You can check whether bluetooth is available on a specific device and/or if it's enabled or not.
+
+```Kotlin
+              if (blueFlow.isBluetoothAvailable()) {  //Check if bluetooth is supported on this device
+                    if (blueFlow.isBluetoothEnabled()) {  //Checks if bluetooth is actually turned ON for this device
+                         Toast.makeText(
+                            applicationContext,
+                            "Bluetooth is ON",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else //Bluetooth is OFF
+                        Toast.makeText(
+                            applicationContext,
+                            "PLEASE ENABLE BLUETOOTH",
+                            Toast.LENGTH_LONG
+                        ).show()
+                } else //Bluetooth is NOT Supported on the device
+                    Toast.makeText(
+                        applicationContext,
+                        "BLUETOOTH NOT AVAILABLE ON THIS DEVICE",
+                        Toast.LENGTH_LONG
+                    ).show()
+ ```
 
 License
 -------
