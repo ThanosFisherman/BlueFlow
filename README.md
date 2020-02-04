@@ -23,6 +23,7 @@ The following permissions must be granted for this lib to be able to work correc
 ```xml
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<!-- Dangerous Permissions below. Make sure you explicitly ask for Location Permissions in your app on Android 6.0+ -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
