@@ -1,6 +1,7 @@
 BlueFlow
 -----------
-Android [Bluetooth classic](https://developer.android.com/guide/topics/connectivity/bluetooth) API wrapped in [Coroutines](https://github.com/Kotlin/kotlinx.coroutines) / [Flow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/Flow.kt).
+Android [Bluetooth classic](https://developer.android.com/guide/topics/connectivity/bluetooth) API wrapped in [Coroutines](https://github.com/Kotlin/kotlinx.coroutines) / [Flow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/Flow.kt)
+inspired by [RxBluetooth](https://github.com/IvBaranov/RxBluetooth) and [AndroidBluetoothLibrary](https://github.com/douglasjunior/AndroidBluetoothLibrary).
 
 Dependency
 ------------

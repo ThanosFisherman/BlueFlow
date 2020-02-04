@@ -16,7 +16,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.github.thanosfisherman.blueflow.BlueFlow
 import io.github.thanosfisherman.blueflow.safeCollect
-import io.github.thanosfisherman.blueflow.toByteArrayFromHex
 import io.github.thanosfisherman.blueflow.toHex
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
@@ -40,6 +39,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         blueFlow = BlueFlow.getInstance(applicationContext)
+        btnSend.setOnClickListener {
+            Toast.makeText(
+                applicationContext,
+                "Under Construction",
+                Toast.LENGTH_LONG
+            ).show()
+        }
         btnStart.setOnClickListener {
             devices.clear()
             setAdapter(devices)
@@ -75,14 +81,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //hardware specific commands
-    private fun sendMsg() {
-        val job = Job()
-        jobs.add(job)
-        CoroutineScope(Main + job).launch {
-            blueFlow.getIO()?.send(izarConf.toByteArrayFromHex)
-        }
-    }
 
     private fun observeDevices() {
 
@@ -127,10 +125,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setAdapter(list: List<BluetoothDevice>) {
         //val itemLayoutId = android.R.layout.simple_list_item_1
-        result.setOnItemClickListener { parent, view, position, id ->
-
-            connect(list[position], UUID)
-        }
         result.adapter = object : ArrayAdapter<BluetoothDevice?>(
             this, android.R.layout.simple_list_item_2,
             android.R.id.text1, list
