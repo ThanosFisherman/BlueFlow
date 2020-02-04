@@ -46,25 +46,15 @@ val blueFlow: BlueFlow = BlueFlow.getInstance(applicationContext)
 You can check whether bluetooth is available on a specific device and/or if it's enabled or not.
 
 ```Kotlin
-              if (blueFlow.isBluetoothAvailable()) {  //Check if bluetooth is supported on this device
-                    if (blueFlow.isBluetoothEnabled()) {  //Checks if bluetooth is actually turned ON for this device
-                         Toast.makeText(
-                            applicationContext,
-                            "Bluetooth is ON",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } else //Bluetooth is OFF
-                        Toast.makeText(
-                            applicationContext,
-                            "PLEASE ENABLE BLUETOOTH",
-                            Toast.LENGTH_LONG
-                        ).show()
-                } else //Bluetooth is NOT Supported on the device
-                    Toast.makeText(
-                        applicationContext,
-                        "BLUETOOTH NOT AVAILABLE ON THIS DEVICE",
-                        Toast.LENGTH_LONG
-                    ).show()
+      if (blueFlow.isBluetoothAvailable()) { //Checks if bluetooth is supported on this device
+                    if (blueFlow.isBluetoothEnabled()) { //Checks if bluetooth is actually turned ON for this device
+                        Toast.makeText(applicationContext, "BLUETOOTH IS ON", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(applicationContext, "PLEASE ENABLE BLUETOOTH", Toast.LENGTH_LONG).show()
+                    }
+                } else { //Bluetooth is NOT Supported on the device
+                    Toast.makeText(applicationContext, "BLUETOOTH NOT AVAILABLE ON THIS DEVICE", Toast.LENGTH_LONG).show()
+                }
  ```
 
 License
