@@ -21,8 +21,8 @@ android {
     defaultConfig {
         minSdkVersion(15)
         targetSdkVersion(29)
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = Artifact.versionCode
+        versionName = Artifact.artifactVersion
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
