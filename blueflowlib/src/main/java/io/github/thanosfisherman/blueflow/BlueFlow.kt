@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import java.io.IOException
 import java.util.*
+import kotlin.Short.Companion.MIN_VALUE
 
 class BlueFlow private constructor(private val context: Context) {
 
@@ -209,7 +210,7 @@ class BlueFlow private constructor(private val context: Context) {
     /**
      * Observes Bluetooth devices found while discovering.
      *
-     * @return Flow Observable with BluetoothDevice found
+     * @return Flow of [BluetoothDeviceWrapper] including [BluetoothDevice] and rssi
      */
     @ExperimentalCoroutinesApi
     fun discoverDevices() = callbackFlow {
@@ -219,7 +220,8 @@ class BlueFlow private constructor(private val context: Context) {
                 if (BluetoothDevice.ACTION_FOUND == intent?.action) {
                     val device =
                         intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice
-                    offer(device)
+                    val rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, MIN_VALUE).toInt()
+                    offer(BluetoothDeviceWrapper(device, rssi))
                 }
             }
         }
@@ -232,7 +234,7 @@ class BlueFlow private constructor(private val context: Context) {
 
     /**
      * Observes DiscoveryState, which can be ACTION_DISCOVERY_STARTED or ACTION_DISCOVERY_FINISHED
-     * from {@link BluetoothAdapter}.
+     * from [BluetoothAdapter].
      *
      * @return Flow Observable with DiscoveryState
      */
@@ -255,10 +257,11 @@ class BlueFlow private constructor(private val context: Context) {
 
     /**
      * Observes BluetoothState. Possible values are:
-     * {@link BluetoothAdapter#STATE_OFF},
-     * {@link BluetoothAdapter#STATE_TURNING_ON},
-     * {@link BluetoothAdapter#STATE_ON},
-     * {@link BluetoothAdapter#STATE_TURNING_OFF},
+     *
+     * [BluetoothAdapter.STATE_OFF],
+     * [BluetoothAdapter.STATE_TURNING_ON],
+     * [BluetoothAdapter.STATE_ON],
+     * [BluetoothAdapter.STATE_TURNING_OFF],
      *
      * @return Flow Observable with BluetoothState
      */
@@ -280,9 +283,9 @@ class BlueFlow private constructor(private val context: Context) {
 
     /**
      * Observes scan mode of device. Possible values are:
-     * {@link BluetoothAdapter#SCAN_MODE_NONE},
-     * {@link BluetoothAdapter#SCAN_MODE_CONNECTABLE},
-     * {@link BluetoothAdapter#SCAN_MODE_CONNECTABLE_DISCOVERABLE}
+     * [BluetoothAdapter.SCAN_MODE_NONE],
+     * [BluetoothAdapter.SCAN_MODE_CONNECTABLE],
+     * [BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE]
      *
      * @return Flow Observable with scan mode
      */
@@ -303,12 +306,12 @@ class BlueFlow private constructor(private val context: Context) {
     }.flowOn(Dispatchers.IO)
 
     /**
-     * Observes connection to specified profile. See also {@link BluetoothProfile.ServiceListener}.
+     * Observes connection to specified profile. See also @see [BluetoothProfile.ServiceListener].
      *
-     * @param bluetoothProfile bluetooth profile to connect to. Can be either {@link
-     * BluetoothProfile#HEALTH},{@link BluetoothProfile#HEADSET}, {@link BluetoothProfile#A2DP},
-     * {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}.
-     * @return Flow Observable with {@link ServiceEvent}
+     * @param bluetoothProfile bluetooth profile to connect to. Can be either [BluetoothProfile#HEALTH],
+     * [BluetoothProfile.HEADSET], [BluetoothProfile.A2DP],
+     * [BluetoothProfile.GATT] or [BluetoothProfile.GATT_SERVER].
+     * @return Flow Observable with [ServiceEvent]
      */
     @ExperimentalCoroutinesApi
     fun bluetoothProfile(bluetoothProfile: Int): Flow<ServiceEvent> = callbackFlow {
@@ -339,10 +342,10 @@ class BlueFlow private constructor(private val context: Context) {
      * Close the connection of the profile proxy to the Service.
      *
      *
-     *  Clients should call this when they are no longer using the proxy obtained from [ ][.observeBluetoothProfile].
+     *  Clients should call this when they are no longer using the proxy
      *
      * Profile can be one of [BluetoothProfile.HEALTH],[BluetoothProfile.HEADSET],
-     * [BluetoothProfile.A2DP], [BluetoothProfile.GATT] or [ ][BluetoothProfile.GATT_SERVER].
+     * [BluetoothProfile.A2DP], [BluetoothProfile.GATT] or [BluetoothProfile.GATT_SERVER].
      *
      * @param profile the Bluetooth profile
      * @param proxy profile proxy object
@@ -387,7 +390,7 @@ class BlueFlow private constructor(private val context: Context) {
     /**
      * Observes bond state of devices.
      *
-     * @return Flow Observable with {@link BondStateEvent}
+     * @return Flow Observable with [BondStateEvent]
      */
     @ExperimentalCoroutinesApi
     fun bondState() = callbackFlow {

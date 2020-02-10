@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.github.thanosfisherman.blueflow.BlueFlow
+import io.github.thanosfisherman.blueflow.BluetoothDeviceWrapper
 import io.github.thanosfisherman.blueflow.safeCollect
 import io.github.thanosfisherman.blueflow.toHex
 import kotlinx.android.synthetic.main.activity_main.*
@@ -31,7 +32,7 @@ private const val REQUEST_ENABLE_BT = 1
 class MainActivity : AppCompatActivity() {
 
     private var jobs = mutableListOf<CompletableJob?>()
-    private val devices = arrayListOf<BluetoothDevice>()
+    private val devices = arrayListOf<BluetoothDeviceWrapper>()
     private lateinit var blueFlow: BlueFlow
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,12 +81,11 @@ class MainActivity : AppCompatActivity() {
 
         val job = Job()
         jobs.add(job)
-
         CoroutineScope(IO + job).launch {
 
             blueFlow.discoverDevices().safeCollect {
                 addDevice(it)
-                Log.i("MAIN", it.address)
+                Log.i("MAIN", it.bluetoothDevice.address)
             }
         }
     }
@@ -112,14 +112,14 @@ class MainActivity : AppCompatActivity() {
             blueFlow.cancelDiscovery()
     }
 
-    private suspend fun addDevice(device: BluetoothDevice) = withContext(Main) {
+    private suspend fun addDevice(device: BluetoothDeviceWrapper) = withContext(Main) {
         devices.add(device)
         setAdapter(devices)
     }
 
-    private fun setAdapter(list: List<BluetoothDevice>) {
+    private fun setAdapter(list: List<BluetoothDeviceWrapper>) {
         //val itemLayoutId = android.R.layout.simple_list_item_1
-        result.adapter = object : ArrayAdapter<BluetoothDevice?>(
+        result.adapter = object : ArrayAdapter<BluetoothDeviceWrapper?>(
             this, android.R.layout.simple_list_item_2,
             android.R.id.text1, list
         ) {
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
                 parent: ViewGroup
             ): View {
                 val view = super.getView(position, convertView, parent)
-                val device: BluetoothDevice = devices[position]
+                val device: BluetoothDevice = devices[position].bluetoothDevice
                 var devName = device.name
                 val devAddress = device.address
                 if (TextUtils.isEmpty(devName)) {
