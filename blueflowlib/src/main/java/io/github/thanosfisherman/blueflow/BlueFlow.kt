@@ -56,7 +56,7 @@ class BlueFlow private constructor(private val context: Context) {
      * Return true if Bluetooth is currently enabled and ready for use.
      * <p>Equivalent to:
      * <code>getBluetoothState() == STATE_ON</code>
-     * <p>Requires {@link android.Manifest.permission#BLUETOOTH}
+     * <p>Requires [android.Manifest.permission.BLUETOOTH]
      *
      * @return true if the local adapter is turned on
      */
@@ -308,7 +308,7 @@ class BlueFlow private constructor(private val context: Context) {
     /**
      * Observes connection to specified profile. See also @see [BluetoothProfile.ServiceListener].
      *
-     * @param bluetoothProfile bluetooth profile to connect to. Can be either [BluetoothProfile#HEALTH],
+     * @param bluetoothProfile bluetooth profile to connect to. Can be either [BluetoothProfile.HEALTH],
      * [BluetoothProfile.HEADSET], [BluetoothProfile.A2DP],
      * [BluetoothProfile.GATT] or [BluetoothProfile.GATT_SERVER].
      * @return Flow Observable with [ServiceEvent]
@@ -500,9 +500,9 @@ class BlueFlow private constructor(private val context: Context) {
     /**
      * Observes ACL broadcast actions from {@link BluetoothDevice}. Possible broadcast ACL action
      * values are:
-     * {@link BluetoothDevice#ACTION_ACL_CONNECTED},
-     * {@link BluetoothDevice#ACTION_ACL_DISCONNECT_REQUESTED},
-     * {@link BluetoothDevice#ACTION_ACL_DISCONNECTED}
+     * [BluetoothDevice.ACTION_ACL_CONNECTED],
+     * [BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED],
+     * [BluetoothDevice.ACTION_ACL_DISCONNECTED]
      *
      * @return Flow Observable with {@link AclEvent}
      */
