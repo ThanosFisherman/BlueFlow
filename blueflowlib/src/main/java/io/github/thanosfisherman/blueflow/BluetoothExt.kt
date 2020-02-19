@@ -19,6 +19,15 @@ fun BluetoothDevice.createRfcommSocket(channel: Int): BluetoothSocket {
     }
 }
 
+fun BluetoothDevice.isConnected(): Boolean {
+    try {
+        val method = this.javaClass.getMethod("isConnected")
+        return method.invoke(this) as Boolean
+    } catch (e: Exception) {
+        throw UnsupportedOperationException(e)
+    }
+}
+
 @ExperimentalCoroutinesApi
 fun BluetoothAdapter.discoverDevices(context: Context) =
     BlueFlow.getInstance(context).discoverDevices()
@@ -45,10 +54,10 @@ fun BluetoothSocket.readByteStream() = channelFlow {
 }.flowOn(Dispatchers.IO)
 
 @ExperimentalCoroutinesApi
-fun BluetoothSocket.readByteStream(
+fun BluetoothSocket.readByteArrayStream(
     minExpectedBytes: Int = 2,
     bufferCapacity: Int = 1024,
-    readInterceptor: (ByteArray) -> Boolean
+    readInterceptor: (ByteArray) -> Boolean = { true }
 ) = channelFlow {
 
     val buffer = ByteArray(bufferCapacity)

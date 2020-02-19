@@ -507,7 +507,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with {@link AclEvent}
      */
     @ExperimentalCoroutinesApi
-    fun AclEvents() = callbackFlow {
+    fun aclEvents() = callbackFlow {
         val filter = IntentFilter().apply {
             addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
