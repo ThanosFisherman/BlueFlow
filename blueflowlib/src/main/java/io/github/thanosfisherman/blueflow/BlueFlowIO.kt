@@ -13,8 +13,6 @@ import java.io.OutputStream
 
 class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
 
-    var minExpectedBytes: Int = 2
-    var buffer = ByteArray(1024) // buffer store for the stream
     private var isConnected = false
 
     private val inputStream: InputStream? =
@@ -112,11 +110,16 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
     }.flowOn(Dispatchers.IO)
 
     @ExperimentalCoroutinesApi
-    fun readByteArrayStream(readInterceptor: (ByteArray) -> Boolean = { true }) = channelFlow {
+    fun readByteArrayStream(
+        minExpectedBytes: Int = 2,
+        bufferCapacity: Int = 1024,
+        readInterceptor: (ByteArray) -> Boolean = { true }
+    ) = channelFlow {
 
         if (inputStream == null) {
             throw NullPointerException("inputStream is null. Perhaps bluetoothSocket is also null")
         }
+        val buffer = ByteArray(bufferCapacity)
         val byteAccumulatorList = mutableListOf<Byte>()
         while (isActive) {
             try {
@@ -126,6 +129,8 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
                 }
                 val numBytes = inputStream.read(buffer)
                 val readBytes = buffer.trim(numBytes)
+                if (byteAccumulatorList.size >= bufferCapacity)
+                    byteAccumulatorList.clear()
                 byteAccumulatorList.addAll(readBytes.toList())
 
                 if (readInterceptor(byteAccumulatorList.toByteArray())) {
@@ -136,10 +141,12 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
                 }
             } catch (e: IOException) {
                 isConnected = false
+                byteAccumulatorList.clear()
                 closeConnections()
                 error("Couldn't read bytes from flow. Disconnected")
             } finally {
                 if (!isConnected) {
+                    byteAccumulatorList.clear()
                     closeConnections()
                     break
                 }
