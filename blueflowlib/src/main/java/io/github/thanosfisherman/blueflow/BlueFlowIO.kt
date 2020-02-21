@@ -117,7 +117,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
         if (inputStream == null) {
             throw NullPointerException("inputStream is null. Perhaps bluetoothSocket is also null")
         }
-
+        val byteAccumulatorList = mutableListOf<Byte>()
         while (isActive) {
             try {
                 if (inputStream.available() < minExpectedBytes) {
@@ -125,9 +125,12 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
                     continue
                 }
                 val numBytes = inputStream.read(buffer)
-                val bytes = buffer.trim(numBytes)
-                if (readInterceptor(bytes)) {
-                    offer(bytes)
+                val readBytes = buffer.trim(numBytes)
+                byteAccumulatorList.addAll(readBytes.toList())
+
+                if (readInterceptor(byteAccumulatorList.toByteArray())) {
+                    offer(byteAccumulatorList.toByteArray())
+                    byteAccumulatorList.clear()
                 } else {
                     delay(1000)
                 }
