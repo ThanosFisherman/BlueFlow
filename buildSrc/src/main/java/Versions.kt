@@ -11,8 +11,8 @@ object Artifact {
 
     val artifactName = "blueflow"
     val artifactGroup = "io.github.thanosfisherman.blueflow"
-    val artifactVersion = "1.0.3"
-    val versionCode = 4
+    val artifactVersion = "1.0.4"
+    val versionCode = 5
     val pomUrl = "https://github.com/ThanosFisherman/BlueFlow"
     val pomScmUrl = "https://github.com/ThanosFisherman/BlueFlow"
     val pomIssueUrl = "https://github.com/ThanosFisherman/BlueFlow/issues"
