@@ -36,7 +36,7 @@ fun ByteArray.trim(size: Int): ByteArray {
 fun String.incLittleEndian(): String {
     val reversedHex = this.chunked(2).reversed().joinToString("").hexToDecLong().inc()
     var result =
-        reversedHex.toHex().chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
+        reversedHex.toHex.chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
     while (result.length < this.length)
         result += "0"
     return result
@@ -45,7 +45,7 @@ fun String.incLittleEndian(): String {
 fun String.incLittleEndian(step: Int): String {
     val reversedHex = this.chunked(2).reversed().joinToString("").hexToDecLong().plus(step)
     var result =
-        reversedHex.toHex().chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
+        reversedHex.toHex.chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
     while (result.length < this.length)
         result += "0"
     return result
@@ -132,5 +132,25 @@ fun Byte.byteToBin(): String {
 
 }
 
-fun Int.toHex(): String = Integer.toHexString(this)
-fun Long.toHex(): String = this.toString(16)
+val Int.toHex: String inline get() = Integer.toHexString(this)
+val Long.toHex: String inline get() = this.toString(16)
+
+fun Int.toHexLower(length: Int): String {
+    val hexString = Integer.toHexString(this)
+    val builder = StringBuilder().append(String.format("%0${length}d", 0))
+    return builder.replace(length - hexString.length, length, hexString).toString()
+}
+
+fun Int.toHexUpper(length: Int): String {
+    return toHexLower(length).toUpperCase(Locale.ENGLISH)
+}
+
+fun Long.toHexLower(length: Int): String {
+    val hexString = this.toString(16)
+    val builder = StringBuilder().append(String.format("%0${length}d", 0))
+    return builder.replace(length - hexString.length, length, hexString).toString()
+}
+
+fun Long.toHexUpper(length: Int): String {
+    return toHexLower(length).toUpperCase(Locale.ENGLISH)
+}
