@@ -57,7 +57,7 @@ fun BluetoothSocket.readByteStream() = channelFlow {
 fun BluetoothSocket.readByteArrayStream(
     minExpectedBytes: Int = 2,
     bufferCapacity: Int = 1024,
-    readInterceptor: (ByteArray) -> Boolean = { true }
+    readInterceptor: (ByteArray) -> ByteArray? = { it }
 ) = channelFlow {
     if (inputStream == null) {
         throw NullPointerException("inputStream is null. Perhaps bluetoothSocket is also null")
@@ -74,10 +74,12 @@ fun BluetoothSocket.readByteArrayStream(
             val readBytes = buffer.trim(numBytes)
             if (byteAccumulatorList.size >= bufferCapacity)
                 byteAccumulatorList.clear()
-            byteAccumulatorList.addAll(readBytes.toList())
 
-            if (readInterceptor(byteAccumulatorList.toByteArray())) {
-                offer(byteAccumulatorList.toByteArray())
+            byteAccumulatorList.addAll(readBytes.toList())
+            val interceptor = readInterceptor(byteAccumulatorList.toByteArray())
+
+            if (interceptor != null) {
+                offer(interceptor)
                 byteAccumulatorList.clear()
             } else {
                 delay(1000)
