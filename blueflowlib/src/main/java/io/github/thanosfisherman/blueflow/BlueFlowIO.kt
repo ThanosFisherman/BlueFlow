@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothSocket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
@@ -114,7 +115,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
         minExpectedBytes: Int = 2,
         bufferCapacity: Int = 1024,
         readInterceptor: (ByteArray) -> ByteArray? = { it }
-    ) = channelFlow {
+    ): Flow<ByteArray> = channelFlow {
 
         if (inputStream == null) {
             throw NullPointerException("inputStream is null. Perhaps bluetoothSocket is also null")
@@ -135,12 +136,14 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
                 byteAccumulatorList.addAll(readBytes.toList())
                 val interceptor = readInterceptor(byteAccumulatorList.toByteArray())
 
-                if (interceptor != null) {
-                    offer(interceptor)
-                    byteAccumulatorList.clear()
-                } else {
+                if (interceptor == null)
                     delay(1000)
+
+                interceptor?.let {
+                    offer(it)
+                    byteAccumulatorList.clear()
                 }
+
             } catch (e: IOException) {
                 isConnected = false
                 byteAccumulatorList.clear()
