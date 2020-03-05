@@ -14,36 +14,21 @@ import java.io.OutputStream
 
 class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
 
-    private var isConnected = false
 
     private val inputStream: InputStream? =
         try {
-            bluetoothSocket?.let {
-                isConnected = true
-                it.inputStream
-            }
+            bluetoothSocket?.inputStream
         } catch (e: IOException) {
             e.printStackTrace()
-            isConnected = false
             throw SocketStreamException("Couldn't open InputStream socket")
-        } finally {
-            if (!isConnected)
-                closeConnections()
         }
 
     private val outputStream: OutputStream? =
         try {
-            bluetoothSocket?.let {
-                isConnected = true
-                it.outputStream
-            }
+            bluetoothSocket?.outputStream
         } catch (e: IOException) {
             e.printStackTrace()
-            isConnected = false
             throw SocketStreamException("Couldn't open OutputStream socket")
-        } finally {
-            if (!isConnected)
-                closeConnections()
         }
 
     /**
@@ -54,7 +39,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
      */
     fun send(bytes: ByteArray): Boolean {
 
-        if (!isConnected) return false
+        if (bluetoothSocket?.isConnected != true) return false
 
         return try {
             outputStream?.write(bytes)
@@ -62,11 +47,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
             true
         } catch (e: IOException) {
             e.printStackTrace()
-            isConnected = false
             false
-        } finally {
-            if (!isConnected)
-                closeConnections()
         }
     }
 
@@ -101,11 +82,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
             try {
                 offer(inputStream.read().toByte())
             } catch (e: IOException) {
-                isConnected = false
                 error("Couldn't read bytes from flow. Disconnected")
-            } finally {
-                if (!isConnected)
-                    closeConnections()
             }
         }
     }.flowOn(Dispatchers.IO)
@@ -145,12 +122,11 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
                 }
 
             } catch (e: IOException) {
-                isConnected = false
                 byteAccumulatorList.clear()
                 closeConnections()
                 error("Couldn't read bytes from flow. Disconnected")
             } finally {
-                if (!isConnected) {
+                if (bluetoothSocket?.isConnected != true) {
                     byteAccumulatorList.clear()
                     closeConnections()
                     break
@@ -163,7 +139,6 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
      * Close the streams and socket connection.
      */
     fun closeConnections() {
-        isConnected = false
         try {
             inputStream?.close()
             outputStream?.close()
@@ -173,5 +148,5 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
         }
     }
 
-    fun isConnected() = isConnected
+    fun isConnected() = bluetoothSocket?.isConnected ?: false
 }

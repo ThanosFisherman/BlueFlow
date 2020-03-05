@@ -81,6 +81,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @param socket bluetooth socket
      * @returns BlueFlowIO
      */
+    //TODO: TEST THIS
     fun getIO(bluetoothSocket: BluetoothSocket): BlueFlowIO {
         this.currentBluetoothSocket = bluetoothSocket
 
@@ -93,11 +94,13 @@ class BlueFlow private constructor(private val context: Context) {
     }
 
     /**
-     * Helper class for simplifying read and write operations from/to {@link BluetoothSocket}.
+     * Helper class for simplifying read and write operations from/to [BluetoothSocket].
      *
      * @returns BlueFlowIO or null
      */
+    //TODO: TEST THIS
     fun getIO(): BlueFlowIO? {
+
         if (blueFlowIO?.isConnected() == true) {
             return blueFlowIO as BlueFlowIO
         }
