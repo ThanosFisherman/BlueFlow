@@ -213,7 +213,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow of [BluetoothDeviceWrapper] including [BluetoothDevice] and rssi
      */
     @ExperimentalCoroutinesApi
-    fun discoverDevices() = callbackFlow {
+    fun discoverDevices(): Flow<BluetoothDeviceWrapper> = callbackFlow<BluetoothDeviceWrapper> {
         val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -239,14 +239,16 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with DiscoveryState
      */
     @ExperimentalCoroutinesApi
-    fun discoveryState() = callbackFlow {
+    fun discoveryState(): Flow<String> = callbackFlow<String> {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
             addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
         }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                intent?.let { offer(it.action) }
+                intent?.let { anIntent ->
+                    anIntent.action?.let { action -> offer(action) }
+                }
             }
         }
         context.registerReceiver(receiver, filter)
@@ -266,7 +268,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with BluetoothState
      */
     @ExperimentalCoroutinesApi
-    fun bluetoothState() = callbackFlow {
+    fun bluetoothState(): Flow<Int> = callbackFlow<Int> {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
         }
@@ -290,7 +292,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with scan mode
      */
     @ExperimentalCoroutinesApi
-    fun scanMode() = callbackFlow {
+    fun scanMode(): Flow<Int> = callbackFlow<Int> {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
         }
@@ -314,7 +316,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with [ServiceEvent]
      */
     @ExperimentalCoroutinesApi
-    fun bluetoothProfile(bluetoothProfile: Int): Flow<ServiceEvent> = callbackFlow {
+    fun bluetoothProfile(bluetoothProfile: Int): Flow<ServiceEvent> = callbackFlow<ServiceEvent> {
 
         val listener = object : BluetoothProfile.ServiceListener {
             var proxy: BluetoothProfile? = null
@@ -360,7 +362,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with {@link ConnectionStateEvent}
      */
     @ExperimentalCoroutinesApi
-    fun connectionState() = callbackFlow {
+    fun connectionState(): Flow<ConnectionStateEvent> = callbackFlow<ConnectionStateEvent> {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         }
@@ -393,7 +395,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with [BondStateEvent]
      */
     @ExperimentalCoroutinesApi
-    fun bondState() = callbackFlow {
+    fun bondState(): Flow<BondStateEvent> = callbackFlow<BondStateEvent> {
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         }
@@ -507,7 +509,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with {@link AclEvent}
      */
     @ExperimentalCoroutinesApi
-    fun aclEvents() = callbackFlow {
+    fun aclEvents(): Flow<AclEvent> = callbackFlow<AclEvent> {
         val filter = IntentFilter().apply {
             addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
@@ -535,7 +537,7 @@ class BlueFlow private constructor(private val context: Context) {
      * @return Flow Observable with an array of Device UUIDs that can be used to connect to the device
      */
     @ExperimentalCoroutinesApi
-    fun fetchDeviceUuids() = callbackFlow {
+    fun fetchDeviceUuids(): Flow<List<Parcelable>> = callbackFlow<List<Parcelable>> {
         val filter = IntentFilter().apply {
             addAction(BluetoothDevice.ACTION_UUID)
         }
@@ -545,11 +547,6 @@ class BlueFlow private constructor(private val context: Context) {
                     val uuidArray =
                         intnt.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID) as? Array<Parcelable>
                     uuidArray?.let { offer(it.toList()) }
-                }
-                try {
-                    //Maybe I don't need to cancel prematurely
-                    cancel()
-                } catch (e: IllegalStateException) {
                 }
             }
         }

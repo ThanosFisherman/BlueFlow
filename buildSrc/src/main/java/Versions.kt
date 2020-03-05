@@ -1,5 +1,5 @@
 object Versions {
-    const val KOTLIN = "1.3.61"
+    const val KOTLIN = "1.3.70"
     const val BINTRAY = "1.8.4"
     const val Coroutines = "1.3.3"
     const val KTX = "1.1.0"
