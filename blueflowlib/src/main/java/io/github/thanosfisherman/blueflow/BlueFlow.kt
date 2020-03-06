@@ -81,14 +81,17 @@ class BlueFlow private constructor(private val context: Context) {
      * @param socket bluetooth socket
      * @returns BlueFlowIO
      */
-    //TODO: TEST THIS
     fun getIO(bluetoothSocket: BluetoothSocket): BlueFlowIO {
-        this.currentBluetoothSocket = bluetoothSocket
 
-        if (blueFlowIO?.isConnected() == true) {
+        if (blueFlowIO?.bluetoothSocket === bluetoothSocket) {
             return blueFlowIO as BlueFlowIO
         }
 
+        if (blueFlowIO?.isConnected() == true) {
+            blueFlowIO?.closeConnections()
+        }
+
+        currentBluetoothSocket = bluetoothSocket
         blueFlowIO = BlueFlowIO(bluetoothSocket)
         return blueFlowIO as BlueFlowIO
     }
@@ -98,15 +101,17 @@ class BlueFlow private constructor(private val context: Context) {
      *
      * @returns BlueFlowIO or null
      */
-    //TODO: TEST THIS
     fun getIO(): BlueFlowIO? {
 
         if (blueFlowIO?.isConnected() == true) {
-            return blueFlowIO as BlueFlowIO
+            blueFlowIO?.closeConnections()
         }
+
         return currentBluetoothSocket?.let { socket ->
+            if (blueFlowIO?.bluetoothSocket === socket)
+                return@let blueFlowIO
             blueFlowIO = BlueFlowIO(socket)
-            blueFlowIO
+            return@let blueFlowIO
         }
     }
 
