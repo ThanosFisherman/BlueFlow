@@ -87,10 +87,6 @@ class BlueFlow private constructor(private val context: Context) {
             return blueFlowIO as BlueFlowIO
         }
 
-        if (blueFlowIO?.isConnected() == true) {
-            blueFlowIO?.closeConnections()
-        }
-
         currentBluetoothSocket = bluetoothSocket
         blueFlowIO = BlueFlowIO(bluetoothSocket)
         return blueFlowIO as BlueFlowIO
@@ -102,10 +98,6 @@ class BlueFlow private constructor(private val context: Context) {
      * @returns BlueFlowIO or null
      */
     fun getIO(): BlueFlowIO? {
-
-        if (blueFlowIO?.isConnected() == true) {
-            blueFlowIO?.closeConnections()
-        }
 
         return currentBluetoothSocket?.let { socket ->
             if (blueFlowIO?.bluetoothSocket === socket)
