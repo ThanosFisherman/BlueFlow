@@ -56,6 +56,7 @@ fun BluetoothSocket.readByteStream() = channelFlow {
 
 @ExperimentalCoroutinesApi
 fun BluetoothSocket.readByteArrayStream(
+    delayMillis: Long = 1000,
     minExpectedBytes: Int = 2,
     bufferCapacity: Int = 1024,
     readInterceptor: (ByteArray) -> ByteArray? = { it }
@@ -68,7 +69,7 @@ fun BluetoothSocket.readByteArrayStream(
     while (isActive) {
         try {
             if (inputStream.available() < minExpectedBytes) {
-                delay(1000)
+                delay(delayMillis)
                 continue
             }
             val numBytes = inputStream.read(buffer)
@@ -80,7 +81,7 @@ fun BluetoothSocket.readByteArrayStream(
             val interceptor = readInterceptor(byteAccumulatorList.toByteArray())
 
             if (interceptor == null)
-                delay(1000)
+                delay(delayMillis)
 
             interceptor?.let {
                 offer(it)

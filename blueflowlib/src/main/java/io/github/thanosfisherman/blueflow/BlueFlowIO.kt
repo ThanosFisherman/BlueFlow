@@ -89,6 +89,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
 
     @ExperimentalCoroutinesApi
     fun readByteArrayStream(
+        delayMillis: Long = 1000,
         minExpectedBytes: Int = 2,
         bufferCapacity: Int = 1024,
         readInterceptor: (ByteArray) -> ByteArray? = { it }
@@ -102,7 +103,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
         while (isActive) {
             try {
                 if (inputStream.available() < minExpectedBytes) {
-                    delay(1000)
+                    delay(delayMillis)
                     continue
                 }
                 val numBytes = inputStream.read(buffer)
@@ -114,7 +115,7 @@ class BlueFlowIO(val bluetoothSocket: BluetoothSocket?) {
                 val interceptor = readInterceptor(byteAccumulatorList.toByteArray())
 
                 if (interceptor == null)
-                    delay(1000)
+                    delay(delayMillis)
 
                 interceptor?.let {
                     offer(it)
