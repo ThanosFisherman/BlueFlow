@@ -1,8 +1,8 @@
 object Versions {
-    const val KOTLIN = "1.3.71"
+    const val KOTLIN = "1.3.72"
     const val BINTRAY = "1.8.4"
     const val Coroutines = "1.3.5"
-    const val KTX = "1.3.0-alpha02"
+    const val KTX = "1.3.0-rc01"
     const val AppCompat = "1.1.0"
     const val DOKKA = "0.10.1"
 }

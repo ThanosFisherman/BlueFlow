@@ -6,7 +6,7 @@ plugins {
 
 android {
     compileSdkVersion(29)
-    buildToolsVersion("29.0.2")
+    buildToolsVersion("29.0.3")
     defaultConfig {
         applicationId = "io.github.thanosfisherman.blueflow.sample"
         minSdkVersion(15)
