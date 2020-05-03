@@ -33,7 +33,7 @@ fun ByteArray.trim(size: Int): ByteArray {
     return data
 }
 
-fun String.incLittleEndian(step: Int = 1): String {
+fun String.incWithEndianness(step: Int = 1): String {
     val reversedLong = this.chunked(2).reversed().joinToString("").hexToDecLong().plus(step)
     var reversedHex = reversedLong.toHex
     while (reversedHex.length < this.length)
@@ -41,7 +41,7 @@ fun String.incLittleEndian(step: Int = 1): String {
     return reversedHex.chunked(2).reversed().joinToString("").toUpperCase(Locale.ENGLISH)
 }
 
-fun String.reverseLittleEndian(): String {
+fun String.reverseEndianness(): String {
     return this.chunked(2).reversed().joinToString("")
 }
 
