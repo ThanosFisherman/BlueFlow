@@ -1,7 +1,7 @@
 object Versions {
     const val KOTLIN = "1.3.72"
     const val BINTRAY = "1.8.5"
-    const val Coroutines = "1.3.5"
+    const val Coroutines = "1.3.6"
     const val KTX = "1.3.0-rc01"
     const val AppCompat = "1.1.0"
     const val DOKKA = "0.10.1"
@@ -11,8 +11,8 @@ object Artifact {
 
     val artifactName = "blueflow"
     val artifactGroup = "io.github.thanosfisherman.blueflow"
-    val artifactVersion = "1.1.0"
-    val versionCode = 10
+    val artifactVersion = "1.1.1"
+    val versionCode = 11
     val pomUrl = "https://github.com/ThanosFisherman/BlueFlow"
     val pomScmUrl = "https://github.com/ThanosFisherman/BlueFlow"
     val pomIssueUrl = "https://github.com/ThanosFisherman/BlueFlow/issues"
