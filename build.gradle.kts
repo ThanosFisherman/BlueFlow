@@ -1,3 +1,7 @@
+plugins {
+    id("com.github.ben-manes.versions") version "0.28.0"
+}
+
 buildscript {
     repositories {
         jcenter()
@@ -5,7 +9,7 @@ buildscript {
     }
     dependencies {
 
-        classpath("com.android.tools.build:gradle:3.6.3")
+        classpath("com.android.tools.build:gradle:4.0.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.KOTLIN}")
     }
 }
