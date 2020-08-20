@@ -1,3 +1,3 @@
-rootProject.name = "BlueFlow"
-include("sample")
-include("blueflowlib")
+rootProject.buildFileName = "build.gradle.kts"
+include(":sample", ":blueflowlib")
+

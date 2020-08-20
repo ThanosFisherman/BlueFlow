@@ -2,41 +2,41 @@ import org.jetbrains.kotlin.konan.properties.hasProperty
 import java.util.*
 
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    kotlin("android.extensions")
+    id(GradlePluginId.ANDROID_LIBRARY)
+    id(GradlePluginId.KOTLIN_ANDROID)
+    id(GradlePluginId.KOTLIN_ANDROID_EXTENSIONS)
     // Documentation for our code
-    id("org.jetbrains.dokka") version Versions.DOKKA
+    id(GradlePluginId.DOKKA) version GradlePluginVersion.DOKKA_VERSION
     // Publication to bintray
-    id("com.jfrog.bintray") version Versions.BINTRAY
+    id(GradlePluginId.BINTRAY) version GradlePluginVersion.BINTRAY_VERSION
     // Maven publication
     `maven-publish`
 }
 
 android {
-    compileSdkVersion(29)
-    buildToolsVersion("29.0.3")
+    compileSdkVersion(AndroidConfig.COMPILE_SDK_VERSION)
+    //buildToolsVersion("29.0.3")
 
 
     defaultConfig {
-        minSdkVersion(15)
-        targetSdkVersion(29)
-        versionCode = Artifact.versionCode
-        versionName = Artifact.artifactVersion
+        minSdkVersion(AndroidConfig.MIN_SDK_VERSION)
+        targetSdkVersion(AndroidConfig.TARGET_SDK_VERSION)
+        versionCode = Artifact.VERSION_CODE
+        versionName = Artifact.VERSION_NAME
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    /*   lintOptions {
-           isAbortOnError = false
-       }*/
-
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+
+        getByName(BuildType.DEBUG) {
+            isMinifyEnabled = BuildTypeDebug.isMinifyEnabled
+            isDebuggable = BuildTypeDebug.isDebuggable
+        }
+
+        getByName(BuildType.RELEASE) {
+            isMinifyEnabled = BuildTypeRelease.isMinifyEnabled
+            isDebuggable = BuildTypeRelease.isDebuggable
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
 
@@ -48,13 +48,8 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.KOTLIN}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.Coroutines}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.Coroutines}")
-    implementation("androidx.core:core-ktx:${Versions.KTX}")
-    testImplementation("junit:junit:4.13")
-    androidTestImplementation("androidx.test.ext:junit:1.1.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")
+    addLibModuleDependencies()
+    addTestDependencies()
 }
 
 
@@ -78,33 +73,33 @@ val sourcesJar by tasks.creating(Jar::class) {
 
 publishing {
     publications {
-        create<MavenPublication>(Artifact.artifactName) {
-            groupId = Artifact.artifactGroup
-            artifactId = Artifact.artifactName
-            version = Artifact.artifactVersion
+        create<MavenPublication>(Artifact.ARTIFACT_NAME) {
+            groupId = Artifact.ARTIFACT_GROUP
+            artifactId = Artifact.ARTIFACT_NAME
+            version = Artifact.VERSION_NAME
             //from(components["java"])
             artifacts {
-                artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+                artifact("$buildDir/outputs/aar/${project.name}-debug.aar")
                 artifact(sourcesJar)
                 artifact(dokkaJar)
             }
 
             pom.withXml {
                 asNode().apply {
-                    appendNode("description", Artifact.pomDesc)
-                    appendNode("name", Artifact.libName)
-                    appendNode("url", Artifact.pomUrl)
+                    appendNode("description", Artifact.POM_DESC)
+                    appendNode("name", Artifact.LIBRARY_NAME)
+                    appendNode("url", Artifact.POM_URL)
                     appendNode("licenses").appendNode("license").apply {
-                        appendNode("name", Artifact.pomLicenseName)
-                        appendNode("url", Artifact.pomLicenseUrl)
-                        appendNode("distribution", Artifact.pomLicenseDist)
+                        appendNode("name", Artifact.POM_LICENSE_NAME)
+                        appendNode("url", Artifact.POM_LICENSE_URL)
+                        appendNode("distribution", Artifact.POM_LICENSE_DIST)
                     }
                     appendNode("developers").appendNode("developer").apply {
-                        appendNode("id", Artifact.pomDeveloperId)
-                        appendNode("name", Artifact.pomDeveloperName)
+                        appendNode("id", Artifact.POM_DEVELOPER_ID)
+                        appendNode("name", Artifact.POM_DEVELOPER_NAME)
                     }
                     appendNode("scm").apply {
-                        appendNode("url", Artifact.pomScmUrl)
+                        appendNode("url", Artifact.POM_SCM_URL)
                     }
                 }
             }
@@ -127,26 +122,26 @@ bintray {
     dryRun = false
 
     // Set maven publication onto bintray plugin
-    setPublications(Artifact.artifactName)
+    setPublications(Artifact.ARTIFACT_NAME)
 
     // Configure package
     pkg.apply {
         repo = "maven"
-        name = Artifact.bintrayName
+        name = Artifact.BINTRAY_NAME
         setLicenses("Apache-2.0")
         setLabels("Kotlin", "android", "bluetooth", "coroutines", "flow")
-        vcsUrl = Artifact.pomScmUrl
-        websiteUrl = Artifact.pomUrl
-        issueTrackerUrl = Artifact.pomIssueUrl
-        githubRepo = Artifact.githubRepo
-        githubReleaseNotesFile = Artifact.githubReadme
+        vcsUrl = Artifact.POM_SCM_URL
+        websiteUrl = Artifact.POM_URL
+        issueTrackerUrl = Artifact.POM_ISSUE_URL
+        githubRepo = Artifact.GITHUB_REPO
+        githubReleaseNotesFile = Artifact.GITHUB_README
 
         // Configure version
         version.apply {
-            name = Artifact.artifactVersion
-            desc = Artifact.pomDesc
+            name = Artifact.VERSION_NAME
+            desc = Artifact.POM_DESC
             released = Date().toString()
-            vcsTag = Artifact.artifactVersion
+            vcsTag = Artifact.VERSION_NAME
         }
     }
 }
