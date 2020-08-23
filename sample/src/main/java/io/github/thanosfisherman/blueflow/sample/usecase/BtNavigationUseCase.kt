@@ -1,6 +1,7 @@
 package io.github.thanosfisherman.blueflow.sample.usecase
 
 import io.github.thanosfisherman.blueflow.BlueFlow
+import io.github.thanosfisherman.blueflow.sample.BluetoothActionEnum
 import io.github.thanosfisherman.blueflow.sample.BtNativeDialogCallback
 import io.github.thanosfisherman.blueflow.sample.BtNavigateState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,7 +14,7 @@ class BtNavigationUseCase(private val blueFlow: BlueFlow) {
 
     val btNavigateChannel: BroadcastChannel<BtNavigateState> = ConflatedBroadcastChannel()
 
-    fun execBtNavigateFlow(params: Any? = null) {
+    fun execBtNavigateFlow(bluetoothActionEnum: BluetoothActionEnum) {
 
         if (!blueFlow.isBluetoothAvailable()) {
             btNavigateChannel.offer(BtNavigateState.BtNotAvailableNavigateState)
@@ -25,7 +26,7 @@ class BtNavigationUseCase(private val blueFlow: BlueFlow) {
             val listener = object : BtNativeDialogCallback {
                 override fun yes() {
                     btNavigateChannel.offer(
-                        BtNavigateState.BtEnableSuccessNavigateState
+                        BtNavigateState.BtEnableSuccessNavigateState(bluetoothActionEnum)
                     )
                 }
 
@@ -37,7 +38,7 @@ class BtNavigationUseCase(private val blueFlow: BlueFlow) {
                 BtNavigateState.BtShowNativeDialogNavigateState(listener)
             )
         } else {
-            btNavigateChannel.offer(BtNavigateState.BtConnectedExecuteState(params))
+            btNavigateChannel.offer(BtNavigateState.BtEnableSuccessNavigateState(bluetoothActionEnum))
         }
     }
 }

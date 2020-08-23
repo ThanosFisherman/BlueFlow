@@ -3,18 +3,17 @@ package io.github.thanosfisherman.blueflow.sample.activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import io.github.thanosfisherman.blueflow.sample.BluetoothActionEnum
 import io.github.thanosfisherman.blueflow.sample.BtNativeDialogCallback
 import io.github.thanosfisherman.blueflow.sample.BtNavigateState
 import io.github.thanosfisherman.blueflow.sample.Injection
 import io.github.thanosfisherman.blueflow.sample.viewmodel.BluetoothViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-
 
 const val REQUEST_ENABLE_BT_CODE = 222
 
@@ -29,7 +28,7 @@ abstract class BaseActivity : AppCompatActivity() {
     protected abstract val layoutResId: Int
     private var callback: BtNativeDialogCallback? = null
 
-    abstract fun executeBtCommand()
+    abstract fun executeBtCommand(params: BluetoothActionEnum)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,14 +76,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 notifyFragment(btNavigateState)
             }
             is BtNavigateState.BtEnableSuccessNavigateState -> {
-                executeBtCommand()
-
-            }
-            is BtNavigateState.BtAlreadyEnabledNavigateState -> {
-                Log.i(TAG, "BTAlreadyEnabledState")
-            }
-            is BtNavigateState.BtConnectedExecuteState<*> -> {
-                executeBtCommand()
+                executeBtCommand(btNavigateState.bluetoothActionEnum)
             }
         }
     }

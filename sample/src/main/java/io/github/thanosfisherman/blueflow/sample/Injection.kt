@@ -18,17 +18,20 @@ package io.github.thanosfisherman.blueflow.sample
 
 import android.content.Context
 import androidx.lifecycle.ViewModelProvider
-import io.github.thanosfisherman.blueflow.sample.usecase.DiscoverBtDevicesUseCase
 import io.github.thanosfisherman.blueflow.BlueFlow
+import io.github.thanosfisherman.blueflow.sample.usecase.BtConnectUseCase
 import io.github.thanosfisherman.blueflow.sample.usecase.BtNavigationUseCase
+import io.github.thanosfisherman.blueflow.sample.usecase.DiscoverBtDevicesUseCase
 import io.github.thanosfisherman.blueflow.sample.viewmodel.ViewModelFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
 /**
  * Class that handles object creation.
  * Like this, objects can be passed as parameters in the constructors and then replaced for
  * testing, where needed.
  */
+@FlowPreview
 @ExperimentalCoroutinesApi
 object Injection {
 
@@ -50,13 +53,19 @@ object Injection {
         )
     )
 
+    private fun provideBtConnectUseCase() = BtConnectUseCase(
+        BlueFlow.getInstance(
+            context ?: throw NullPointerException("Context not provided")
+        )
+    )
+
     /**
      * Provides the [ViewModelProvider.Factory] that is then used to get a reference to
      * [ViewModel] objects.
      */
     fun provideViewModelFactory(): ViewModelProvider.Factory {
         return ViewModelFactory(
-            provideBtNavigationUseCases(), provideBtDiscoveryUseCase()
+            provideBtNavigationUseCases(), provideBtDiscoveryUseCase(), provideBtConnectUseCase()
         )
     }
 }

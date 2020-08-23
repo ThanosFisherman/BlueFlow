@@ -28,7 +28,7 @@ class DiscoverBtDevicesUseCase(private val blueFlow: BlueFlow) {
         return true
     }
 
-    private fun discoverBondedDevices() = flow<BtDiscoveryState> {
+    fun discoverBondedDevices() = flow<BtDiscoveryState> {
         with(deviceList) {
             clear()
             getBondedDevices()?.forEach {
@@ -38,7 +38,6 @@ class DiscoverBtDevicesUseCase(private val blueFlow: BlueFlow) {
                 emit(BtDiscoveryState.BtDiscoverySuccess(deviceWrapperList))
             }
         }
-        startDiscovery()
     }
 
     fun discoverDevices() = flow {
