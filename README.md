@@ -31,7 +31,7 @@ The following permissions must be granted for this lib to be able to work correc
 Usage
 --------------
 
-*Under Construction! For now check the [MainActivity](https://github.com/ThanosFisherman/BlueFlow/blob/master/sample/src/main/java/io/github/thanosfisherman/blueflow/sample/MainActivity.kt) sample that demonstrates the bluetooth device discovery.*
+*Under Construction! For now check the sample project which demonstrates the bluetooth device discovery.*
 
 ### Creating an instance
 
