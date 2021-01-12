@@ -1,13 +1,13 @@
 object GradlePluginVersion {
-    const val ANDROID_GRADLE = "4.0.1"
+    const val ANDROID_GRADLE = "4.1.1"
     const val KOTLIN = CoreVersion.KOTLIN
     const val SAFE_ARGS = CoreVersion.NAVIGATION
-    const val DOKKA_VERSION = "0.10.1"
+    const val DOKKA_VERSION = "1.4.20"
     const val BINTRAY_VERSION = "1.8.5"
 
     const val KTLINT_GRADLE = "9.2.1"
     const val DETEKT = "1.9.1"
-    const val GRADLE_VERSION_PLUGIN = "0.29.0"
+    const val DEPENDENCY_UPDATE_VERSION_PLUGIN = "0.36.0"
     const val GOOGLE_PLAY_SERVICES_VERSION_PLUGIN = "4.3.3"
     const val CRASHLYTICS_VERSION_PLUGIN = "2.1.1"
     const val PERFORMANCE_VERSION_PLUGIN = "1.3.1"

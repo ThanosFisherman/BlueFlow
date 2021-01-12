@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-    id(GradlePluginId.DEPENDENCY_UPDATE) version GradlePluginVersion.GRADLE_VERSION_PLUGIN
+    id(GradlePluginId.DEPENDENCY_UPDATE) version GradlePluginVersion.DEPENDENCY_UPDATE_VERSION_PLUGIN
 }
 
 allprojects {

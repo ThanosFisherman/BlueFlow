@@ -2,8 +2,8 @@ object Artifact {
 
     val ARTIFACT_NAME = "blueflow"
     val ARTIFACT_GROUP = "io.github.thanosfisherman.blueflow"
-    val VERSION_NAME = "1.1.2"
-    val VERSION_CODE = 12
+    val VERSION_NAME = "1.1.3"
+    val VERSION_CODE = 13
     val POM_URL = "https://github.com/ThanosFisherman/BlueFlow"
     val POM_SCM_URL = "https://github.com/ThanosFisherman/BlueFlow"
     val POM_ISSUE_URL = "https://github.com/ThanosFisherman/BlueFlow"
