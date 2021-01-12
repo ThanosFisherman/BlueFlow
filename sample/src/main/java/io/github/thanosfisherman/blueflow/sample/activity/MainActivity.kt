@@ -12,6 +12,7 @@ import io.github.thanosfisherman.blueflow.sample.BtConnection
 import io.github.thanosfisherman.blueflow.sample.BtDiscoveryState
 import io.github.thanosfisherman.blueflow.sample.R
 import io.github.thanosfisherman.blueflow.sample.adapter.DiscoverRecyclerAdapter
+import io.github.thanosfisherman.blueflow.sample.common.isAndroidQAndAbove
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -25,6 +26,12 @@ class MainActivity : BaseActivity() {
     override val layoutResId: Int = R.layout.activity_main
 
     private var adapter: DiscoverRecyclerAdapter? = null
+
+    private val permissionsArray: Array<String> =
+        if (isAndroidQAndAbove())
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        else
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION)
 
     override fun executeBtCommand(params: BluetoothActionEnum) {
         when (params) {
@@ -55,14 +62,10 @@ class MainActivity : BaseActivity() {
 
         btnStart.setOnClickListener {
 
-            if (ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+            if (!isLocationPermissionGranted()) {
                 ActivityCompat.requestPermissions(
                     this@MainActivity,
-                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                    permissionsArray,
                     REQUEST_PERMISSION_COARSE_LOCATION
                 )
             } else {
@@ -81,6 +84,13 @@ class MainActivity : BaseActivity() {
                 Toast.makeText(applicationContext, "SOMETHING WENT WRONG", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun isLocationPermissionGranted(): Boolean {
+        return if (isAndroidQAndAbove())
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+        else
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun checkBtConnectionState(btConnection: BtConnection) {
