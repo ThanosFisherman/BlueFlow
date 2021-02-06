@@ -45,6 +45,7 @@ class DiscoverBtDevicesUseCase(private val blueFlow: BlueFlow) {
     fun discoverDevices() = flow {
         devicesList.clear()
         cancelDiscovery()
+
         Log.i(TAG, "IS DISCOVERY ACTUALLY STARTED? " + startDiscovery())
 
         try {
