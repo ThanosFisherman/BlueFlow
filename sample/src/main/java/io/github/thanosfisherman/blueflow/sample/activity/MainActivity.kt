@@ -3,6 +3,7 @@ package io.github.thanosfisherman.blueflow.sample.activity
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,7 +18,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
-private const val REQUEST_PERMISSION_COARSE_LOCATION = 0
+private const val REQUEST_PERMISSION_COARSE_LOCATION = 100
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -57,6 +58,7 @@ class MainActivity : BaseActivity() {
         recycler_scan.adapter = adapter
 
         btnBounded.setOnClickListener {
+            Log.i(TAG, "GETTING BONDED DEVICES")
             viewModel.initBtNavigation(BluetoothActionEnum.GET_BONDED_DEVICES)
         }
 
@@ -77,6 +79,7 @@ class MainActivity : BaseActivity() {
     private fun observeDeviceDiscoveryState(btDiscoveryState: BtDiscoveryState) {
         when (btDiscoveryState) {
             is BtDiscoveryState.BtDiscoverySuccess -> {
+                Log.i(TAG, btDiscoveryState.devices.toString())
                 adapter?.submitList(btDiscoveryState.devices)
             }
 
@@ -87,10 +90,11 @@ class MainActivity : BaseActivity() {
     }
 
     private fun isLocationPermissionGranted(): Boolean {
-        return if (isAndroidQAndAbove())
+        return if (isAndroidQAndAbove()) {
             ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
-        else
+        } else {
             ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     private fun checkBtConnectionState(btConnection: BtConnection) {

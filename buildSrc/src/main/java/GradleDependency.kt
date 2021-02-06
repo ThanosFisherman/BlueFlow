@@ -1,5 +1,5 @@
 object GradlePluginVersion {
-    const val ANDROID_GRADLE = "4.1.1"
+    const val ANDROID_GRADLE = "4.1.2"
     const val KOTLIN = CoreVersion.KOTLIN
     const val SAFE_ARGS = CoreVersion.NAVIGATION
     const val DOKKA_VERSION = "1.4.20"

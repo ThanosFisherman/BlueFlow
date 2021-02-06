@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.location.LocationManager
 import android.os.Parcelable
 import android.text.TextUtils
+import android.util.Log
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -214,14 +215,26 @@ class BlueFlow private constructor(private val context: Context) {
      */
     @ExperimentalCoroutinesApi
     fun discoverDevices(): Flow<BluetoothDeviceWrapper> = callbackFlow<BluetoothDeviceWrapper> {
-        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND).apply {
+            addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
+            addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+        }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (BluetoothDevice.ACTION_FOUND == intent?.action) {
-                    val device =
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice
-                    val rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, MIN_VALUE).toInt()
-                    offer(BluetoothDeviceWrapper(device, rssi))
+                when (intent?.action) {
+                    BluetoothDevice.ACTION_FOUND -> {
+                        Log.i("BlueFlowLib", "FOUND DEVICE")
+                        val device =
+                            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice?
+                        val rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, MIN_VALUE).toInt()
+                        device?.let { offer(BluetoothDeviceWrapper(it, rssi)) }
+                    }
+                    BluetoothAdapter.ACTION_DISCOVERY_STARTED -> {
+                        Log.i("BlueFlowLib", "DISCOVERY STARTED")
+                    }
+                    BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                        Log.i("BlueFlowLib", "DISCOVERY FINISHED")
+                    }
                 }
             }
         }

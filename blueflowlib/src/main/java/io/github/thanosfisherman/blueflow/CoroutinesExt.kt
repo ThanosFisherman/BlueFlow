@@ -2,6 +2,7 @@ package io.github.thanosfisherman.blueflow
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,11 @@ suspend inline fun <T> Flow<T>.safeCollect(crossinline action: suspend (T) -> Un
         coroutineContext.ensureActive()
         action(it)
     }
+}
+
+fun Job.cancelIfActive() {
+    if (isActive)
+        cancel()
 }
 
 @ExperimentalCoroutinesApi

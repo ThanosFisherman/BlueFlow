@@ -3,6 +3,7 @@ package io.github.thanosfisherman.blueflow.sample.activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
@@ -16,13 +17,18 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
 const val REQUEST_ENABLE_BT_CODE = 222
+const val TAG = "BlueFlow"
 
 @ExperimentalCoroutinesApi
 @FlowPreview
 abstract class BaseActivity : AppCompatActivity() {
     private val TAG = this.javaClass.simpleName
 
-    protected lateinit var viewModel: BluetoothViewModel
+    protected val viewModel: BluetoothViewModel by lazy {
+        ViewModelProvider(this, Injection.provideViewModelFactory()).get(
+            BluetoothViewModel::class.java
+        )
+    }
 
     @get:LayoutRes
     protected abstract val layoutResId: Int
@@ -33,12 +39,17 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layoutResId)
-        viewModel =
-            ViewModelProvider(this, Injection.provideViewModelFactory()).get(
-                BluetoothViewModel::class.java
-            )
 
-        viewModel.btNavigationLive.observe(this) { observeBtNavigationState(it) }
+        viewModel.btNavigationLive.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                observeBtNavigationState(it)
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.cancelDiscovery()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -76,6 +87,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 notifyFragment(btNavigateState)
             }
             is BtNavigateState.BtEnableSuccessNavigateState -> {
+                Log.i(TAG, "executeBtCommand " + btNavigateState.bluetoothActionEnum)
                 executeBtCommand(btNavigateState.bluetoothActionEnum)
             }
         }

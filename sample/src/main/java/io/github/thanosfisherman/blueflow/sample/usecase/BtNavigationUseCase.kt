@@ -4,6 +4,7 @@ import io.github.thanosfisherman.blueflow.BlueFlow
 import io.github.thanosfisherman.blueflow.sample.BluetoothActionEnum
 import io.github.thanosfisherman.blueflow.sample.BtNativeDialogCallback
 import io.github.thanosfisherman.blueflow.sample.BtNavigateState
+import io.github.thanosfisherman.blueflow.sample.common.EventWrapper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -12,12 +13,12 @@ import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 @ExperimentalCoroutinesApi
 class BtNavigationUseCase(private val blueFlow: BlueFlow) {
 
-    val btNavigateChannel: BroadcastChannel<BtNavigateState> = ConflatedBroadcastChannel()
+    val btNavigateChannel: BroadcastChannel<EventWrapper<BtNavigateState>> = ConflatedBroadcastChannel()
 
     fun execBtNavigateFlow(bluetoothActionEnum: BluetoothActionEnum) {
 
         if (!blueFlow.isBluetoothAvailable()) {
-            btNavigateChannel.offer(BtNavigateState.BtNotAvailableNavigateState)
+            btNavigateChannel.offer(EventWrapper(BtNavigateState.BtNotAvailableNavigateState))
             return
         }
 
@@ -26,7 +27,7 @@ class BtNavigationUseCase(private val blueFlow: BlueFlow) {
             val listener = object : BtNativeDialogCallback {
                 override fun yes() {
                     btNavigateChannel.offer(
-                        BtNavigateState.BtEnableSuccessNavigateState(bluetoothActionEnum)
+                        EventWrapper(BtNavigateState.BtEnableSuccessNavigateState(bluetoothActionEnum))
                     )
                 }
 
@@ -35,10 +36,10 @@ class BtNavigationUseCase(private val blueFlow: BlueFlow) {
                 }
             }
             btNavigateChannel.offer(
-                BtNavigateState.BtShowNativeDialogNavigateState(listener)
+                EventWrapper(BtNavigateState.BtShowNativeDialogNavigateState(listener))
             )
         } else {
-            btNavigateChannel.offer(BtNavigateState.BtEnableSuccessNavigateState(bluetoothActionEnum))
+            btNavigateChannel.offer(EventWrapper(BtNavigateState.BtEnableSuccessNavigateState(bluetoothActionEnum)))
         }
     }
 }

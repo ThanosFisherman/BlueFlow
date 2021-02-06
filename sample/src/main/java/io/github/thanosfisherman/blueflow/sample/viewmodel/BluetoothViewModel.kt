@@ -1,20 +1,22 @@
 package io.github.thanosfisherman.blueflow.sample.viewmodel
 
 import android.bluetooth.BluetoothDevice
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import io.github.thanosfisherman.blueflow.cancelIfActive
 import io.github.thanosfisherman.blueflow.sample.BluetoothActionEnum
 import io.github.thanosfisherman.blueflow.sample.BtConnection
 import io.github.thanosfisherman.blueflow.sample.BtDiscoveryState
 import io.github.thanosfisherman.blueflow.sample.BtNavigateState
+import io.github.thanosfisherman.blueflow.sample.common.EventWrapper
 import io.github.thanosfisherman.blueflow.sample.usecase.BtConnectUseCase
 import io.github.thanosfisherman.blueflow.sample.usecase.BtNavigationUseCase
 import io.github.thanosfisherman.blueflow.sample.usecase.DiscoverBtDevicesUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -24,21 +26,29 @@ class BluetoothViewModel(
     private val btConnectUseCase: BtConnectUseCase
 ) : ViewModel() {
 
-    val btNavigationLive: LiveData<BtNavigateState> =
-        btNavigationUseCase.btNavigateChannel.asFlow().asLiveData(viewModelScope.coroutineContext)
-
+    private var job: Job? = null
+    val btNavigationLive: LiveData<EventWrapper<BtNavigateState>> =
+        btNavigationUseCase.btNavigateChannel.asFlow().asLiveData()
+    private val discoverLive = MutableLiveData<BtDiscoveryState>()
 
     fun initBtNavigation(bluetoothActionEnum: BluetoothActionEnum) {
         btNavigationUseCase.execBtNavigateFlow(bluetoothActionEnum)
     }
 
     fun discoverBtDevices(): LiveData<BtDiscoveryState> {
-        btDiscoverUseCase.startDiscovery()
-        return btDiscoverUseCase.discoverDevices().asLiveData(viewModelScope.coroutineContext)
+        job?.cancelIfActive()
+        job = btDiscoverUseCase.discoverDevices().onEach { discoverLive.value = it }.launchIn(viewModelScope)
+        return discoverLive
     }
 
     fun getBondedDevices(): LiveData<BtDiscoveryState> {
-        return btDiscoverUseCase.discoverBondedDevices().asLiveData()
+        job?.cancelIfActive()
+        job = btDiscoverUseCase.discoverBondedDevices().onEach { discoverLive.value = it }.launchIn(viewModelScope)
+        return discoverLive
+    }
+
+    fun startDiscovery() {
+        btDiscoverUseCase.startDiscovery()
     }
 
     fun cancelDiscovery() {

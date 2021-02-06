@@ -22,9 +22,9 @@ private object LibraryVersion {
 
 // Versions consts that are used across libraries and Gradle plugins
 object CoreVersion {
-    const val KOTLIN = "1.4.21"
+    const val KOTLIN = "1.4.30"
     const val KTLINT = "0.36.0"
-    const val NAVIGATION = "2.3.2"
+    const val NAVIGATION = "2.3.3"
 }
 
 object LibDependency {
